@@ -95,3 +95,16 @@ export async function getAnnouncements(lat, lng) {
   if (error) throw error
   return data || []
 }
+
+export async function submitReport({ lat, lng, type, description, contact }) {
+  const { data, error } = await supabase.rpc('submit_service_request', {
+    input_organization_id: ORG_ID,
+    input_lat: lat,
+    input_lng: lng,
+    input_request_type: type,
+    input_description: description,
+    input_contact: contact || null,
+  })
+  if (error) throw error
+  return data
+}

@@ -4,10 +4,11 @@ import { registerForPush } from './push'
 import BottomNav from './BottomNav'
 import ScheduleView from './ScheduleView'
 import SettingsView from './SettingsView'
+import AlertsView from './AlertsView'
+import ReportView from './ReportView'
 import Logo from './Logo'
 import { S } from './styles'
 import { useLang } from './i18n'
-import AlertsView from './AlertsView'
 
 export default function App() {
   const { t } = useLang()
@@ -19,8 +20,10 @@ export default function App() {
   const [org, setOrg] = useState(null)
   const [showMap, setShowMap] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [coords, setCoords] = useState(null)
   const [alerts, setAlerts] = useState([])
   const [alertsLoading, setAlertsLoading] = useState(false)
+  const [unreadIds, setUnreadIds] = useState(new Set())
   const [seenAlerts, setSeenAlerts] = useState(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem('seenAlerts') || '[]'))
@@ -32,7 +35,7 @@ export default function App() {
     const saved = localStorage.getItem('pinned')
     return saved ? JSON.parse(saved) : null
   })
-  const [unreadIds, setUnreadIds] = useState(new Set())
+
   const accent = org?.primary_color || '#1d4ed8'
 
   useEffect(() => {
@@ -115,12 +118,15 @@ export default function App() {
     }
     setCollections(data)
     setStatus(null)
+    setCoords({ lat, lng })
     registerForPush(lat, lng).catch(() => {})
+
     setAlertsLoading(true)
     getAnnouncements(lat, lng)
       .then(setAlerts)
       .catch(() => {})
       .finally(() => setAlertsLoading(false))
+
     return true
   }
 
@@ -160,7 +166,11 @@ export default function App() {
         {tab === 'alerts' && (
           <AlertsView alerts={alerts} loading={alertsLoading} unreadIds={unreadIds} />
         )}
-        {tab === 'report' && <div style={S.empty}>{t.reportSoon}</div>}
+
+        {tab === 'report' && (
+          <ReportView coords={coords} address={address} accent={accent} />
+        )}
+
         {tab === 'settings' && <SettingsView accent={accent} />}
       </div>
 
