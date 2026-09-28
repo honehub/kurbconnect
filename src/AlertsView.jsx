@@ -58,6 +58,7 @@ const row = {
   gridTemplateColumns: '36px 1fr',
   gap: 14,
   padding: '16px 20px',
+  background: C.paper,
   borderTop: `1px solid ${C.ruleSoft}`,
   alignItems: 'start',
 }

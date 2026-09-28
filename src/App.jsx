@@ -9,6 +9,7 @@ import ReportView from './ReportView'
 import Logo from './Logo'
 import { S } from './styles'
 import { useLang } from './i18n'
+import ProviderHeader from './ProviderHeader'
 
 export default function App() {
   const { t } = useLang()
@@ -36,7 +37,8 @@ export default function App() {
     return saved ? JSON.parse(saved) : null
   })
 
-  const accent = org?.primary_color || '#1d4ed8'
+  const accent = '#1d4ed8'
+  const brand = org?.primary_color || accent
 
   useEffect(() => {
     getOrganization().then(setOrg).catch(() => {})
@@ -135,15 +137,8 @@ export default function App() {
   return (
     <div style={S.page}>
       <div style={S.shell}>
-        <header style={S.topbar}>
-          <span style={S.wordmark}>
-            <Logo size={26} color={accent} />
-            Kurbly
-          </span>
-          {org?.organization_name && (
-            <span style={S.provider}>{org.organization_name}</span>
-          )}
-        </header>
+
+        <ProviderHeader org={org} />
 
         {tab === 'home' && (
           <ScheduleView
@@ -171,7 +166,7 @@ export default function App() {
           <ReportView coords={coords} address={address} accent={accent} />
         )}
 
-        {tab === 'settings' && <SettingsView accent={accent} />}
+        {tab === 'settings' && <SettingsView accent={accent} org={org} />}
       </div>
 
       <BottomNav tab={tab} setTab={setTab} accent={accent} alertCount={unread} />

@@ -95,7 +95,7 @@ export default function ReportView({ coords, address, accent }) {
 
   return (
     <>
-      <div style={{ padding: '18px 20px 4px' }}>
+       <div style={{ padding: '18px 20px 14px', background: C.paper }}>
         <h2 style={pageTitle}>{t.reportTitle}</h2>
         <p style={intro}>{t.reportIntro}</p>
         <p style={addressLine}>{address}</p>
@@ -110,7 +110,7 @@ export default function ReportView({ coords, address, accent }) {
             onClick={() => setType(id)}
             style={{
               ...typeRow,
-              background: active ? '#F8FAFC' : 'transparent',
+              background: active ? '#EFF6FF' : C.paper,
               borderLeft: active ? `3px solid ${accent}` : '3px solid transparent',
             }}
           >
@@ -123,7 +123,7 @@ export default function ReportView({ coords, address, accent }) {
       })}
 
       {type && (
-        <div style={{ padding: '22px 20px 0' }}>
+        <div style={{ padding: '22px 20px', background: C.paper, borderTop: `1px solid ${C.rule}` }}>
           <label style={S.label} htmlFor="desc">{t.describeIt}</label>
           <textarea
             id="desc"
@@ -194,10 +194,17 @@ const addressLine = {
   fontSize: 13, color: C.faint, margin: '10px 0 0',
 }
 const typeRow = {
-  width: '100%', display: 'flex', alignItems: 'center', gap: 13,
-  padding: '14px 20px', border: 'none',
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 13,
+  padding: '14px 20px',
+  border: 'none',
   borderBottom: `1px solid ${C.ruleSoft}`,
-  fontSize: 15, fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
+  fontSize: 15,
+  fontFamily: 'inherit',
+  cursor: 'pointer',
+  textAlign: 'left',
 }
 const photoRow = { display: 'flex', gap: 10, flexWrap: 'wrap' }
 const thumb = {

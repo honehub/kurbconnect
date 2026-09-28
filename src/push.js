@@ -76,6 +76,23 @@ export async function savePreferences(prefs) {
     input_minute: prefs.minute ?? 0,
     input_categories: prefs.categories,
     input_language: prefs.language,
+    input_alerts: prefs.alerts,
+    input_paused_until: prefs.pausedUntil ?? null,
+    input_morning_hour: prefs.morningHour ?? 6,
+    input_morning_minute: prefs.morningMinute ?? 0,
   })
+  return !error
+}
+
+export async function deactivateDevice() {
+  const token = getDeviceToken()
+  if (!token) return false
+  const { error } = await supabase.rpc('deactivate_push_device', {
+    input_token: token,
+  })
+  if (!error) {
+    localStorage.removeItem('pushToken')
+    deviceToken = null
+  }
   return !error
 }
