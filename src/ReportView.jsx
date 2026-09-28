@@ -14,11 +14,11 @@ export default function ReportView({ coords, address, accent }) {
   const [error, setError] = useState(null)
 
   const TYPES = [
-    { id: 'missed_pickup',    label: t.typeMissed,  Icon: CircleAlert },
-    { id: 'damaged_container',label: t.typeDamaged, Icon: Wrench },
-    { id: 'new_container',    label: t.typeNewCart, Icon: PackagePlus },
-    { id: 'bulk_pickup',      label: t.typeBulk,    Icon: Truck },
-    { id: 'other',            label: t.typeOther,   Icon: MessageSquare },
+    { id: 'missed_pickup',     label: t.typeMissed,  Icon: CircleAlert },
+    { id: 'damaged_container', label: t.typeDamaged, Icon: Wrench },
+    { id: 'new_container',     label: t.typeNewCart, Icon: PackagePlus },
+    { id: 'bulk_pickup',       label: t.typeBulk,    Icon: Truck },
+    { id: 'other',             label: t.typeOther,   Icon: MessageSquare },
   ]
 
   if (!coords) {
@@ -36,7 +36,11 @@ export default function ReportView({ coords, address, accent }) {
           {t.reportSentBody.replace('{id}', sentId.slice(0, 8).toUpperCase())}
         </p>
         <button
-          onClick={() => { setSentId(null); setType(null); setDescription(''); }}
+          onClick={() => {
+            setSentId(null)
+            setType(null)
+            setDescription('')
+          }}
           style={{ ...S.buttonQuiet, marginTop: 24 }}
         >
           {t.reportAnother}
@@ -55,6 +59,7 @@ export default function ReportView({ coords, address, accent }) {
         type,
         description,
         contact,
+        address,
       })
       setSentId(id)
     } catch {
