@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/geocode/:path*",
+      "destination": "https://geocoding.geo.census.gov/geocoder/:path*"
+    }
+  ]
+}
