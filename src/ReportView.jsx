@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { CircleAlert, Wrench, PackagePlus, Truck, MessageSquare, Check } from 'lucide-react'
+import { CircleAlert, Wrench, PackagePlus, Truck, MessageSquare, Check, Camera, X } from 'lucide-react'
 import { submitReport } from './supabase'
+import { pickPhoto, uploadPhotos, attachPhotos, MAX_PHOTOS } from './photos'
 import { S, C } from './styles'
 import { useLang } from './i18n'
 
@@ -9,7 +10,9 @@ export default function ReportView({ coords, address, accent }) {
   const [type, setType] = useState(null)
   const [description, setDescription] = useState('')
   const [contact, setContact] = useState('')
+  const [photos, setPhotos] = useState([])
   const [busy, setBusy] = useState(false)
+  const [stage, setStage] = useState(null)
   const [sentId, setSentId] = useState(null)
   const [error, setError] = useState(null)
 
@@ -21,9 +24,7 @@ export default function ReportView({ coords, address, accent }) {
     { id: 'other',             label: t.typeOther,   Icon: MessageSquare },
   ]
 
-  if (!coords) {
-    return <div style={S.empty}>{t.needLocation}</div>
-  }
+  if (!coords) return <div style={S.empty}>{t.needLocation}</div>
 
   if (sentId) {
     return (
@@ -40,6 +41,7 @@ export default function ReportView({ coords, address, accent }) {
             setSentId(null)
             setType(null)
             setDescription('')
+            setPhotos([])
           }}
           style={{ ...S.buttonQuiet, marginTop: 24 }}
         >
@@ -49,10 +51,24 @@ export default function ReportView({ coords, address, accent }) {
     )
   }
 
+  async function addPhoto() {
+    try {
+      const result = await pickPhoto()
+      if (result) setPhotos((p) => [...p, result].slice(0, MAX_PHOTOS))
+    } catch {
+      // cancelled or denied — nothing to report
+    }
+  }
+
+  function removePhoto(i) {
+    setPhotos((p) => p.filter((_, idx) => idx !== i))
+  }
+
   async function send() {
     setBusy(true)
     setError(null)
     try {
+      setStage(t.sending)
       const id = await submitReport({
         lat: coords.lat,
         lng: coords.lng,
@@ -61,11 +77,19 @@ export default function ReportView({ coords, address, accent }) {
         contact,
         address,
       })
+
+      if (photos.length) {
+        setStage(t.uploading)
+        const paths = await uploadPhotos(photos.map((p) => p.blob))
+        await attachPhotos(id, paths)
+      }
+
       setSentId(id)
     } catch {
       setError(t.reportFailed)
     } finally {
       setBusy(false)
+      setStage(null)
     }
   }
 
@@ -110,7 +134,31 @@ export default function ReportView({ coords, address, accent }) {
             style={{ ...S.input, resize: 'vertical', lineHeight: 1.5 }}
           />
 
-          <label style={{ ...S.label, marginTop: 18 }} htmlFor="contact">
+          <div style={{ ...S.label, marginTop: 20 }}>{t.photos}</div>
+          <div style={{ ...S.settingHint, marginBottom: 10 }}>{t.photosHint}</div>
+
+          <div style={photoRow}>
+            {photos.map((p, i) => (
+              <div key={i} style={thumb}>
+                <img src={p.preview} alt="" style={thumbImg} />
+                <button
+                  onClick={() => removePhoto(i)}
+                  aria-label={t.removePhoto}
+                  style={thumbRemove}
+                >
+                  <X size={13} color="#fff" strokeWidth={2.6} />
+                </button>
+              </div>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <button onClick={addPhoto} style={addTile}>
+                <Camera size={20} color={C.muted} strokeWidth={1.8} />
+                <span style={{ fontSize: 11, color: C.muted }}>{t.addPhoto}</span>
+              </button>
+            )}
+          </div>
+
+          <label style={{ ...S.label, marginTop: 20 }} htmlFor="contact">
             {t.contactOptional}
           </label>
           <input
@@ -128,7 +176,7 @@ export default function ReportView({ coords, address, accent }) {
             disabled={busy}
             style={{ ...S.button, background: accent, opacity: busy ? 0.45 : 1, marginTop: 20 }}
           >
-            {busy ? t.sending : t.submitReport}
+            {busy ? stage || t.sending : t.submitReport}
           </button>
         </div>
       )}
@@ -137,61 +185,45 @@ export default function ReportView({ coords, address, accent }) {
 }
 
 const pageTitle = {
-  fontSize: 22,
-  fontWeight: 700,
-  color: C.ink,
-  margin: 0,
-  letterSpacing: '-0.02em',
+  fontSize: 22, fontWeight: 700, color: C.ink, margin: 0, letterSpacing: '-0.02em',
 }
-
 const intro = {
-  fontSize: 14,
-  color: C.muted,
-  lineHeight: 1.5,
-  margin: '6px 0 0',
+  fontSize: 14, color: C.muted, lineHeight: 1.5, margin: '6px 0 0',
 }
-
 const addressLine = {
-  fontSize: 13,
-  color: C.faint,
-  margin: '10px 0 0',
+  fontSize: 13, color: C.faint, margin: '10px 0 0',
 }
-
 const typeRow = {
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 13,
-  padding: '14px 20px',
-  border: 'none',
+  width: '100%', display: 'flex', alignItems: 'center', gap: 13,
+  padding: '14px 20px', border: 'none',
   borderBottom: `1px solid ${C.ruleSoft}`,
-  fontSize: 15,
-  fontFamily: 'inherit',
-  cursor: 'pointer',
-  textAlign: 'left',
+  fontSize: 15, fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
 }
-
+const photoRow = { display: 'flex', gap: 10, flexWrap: 'wrap' }
+const thumb = {
+  position: 'relative', width: 78, height: 78,
+  borderRadius: 8, overflow: 'hidden', border: `1px solid ${C.rule}`,
+}
+const thumbImg = { width: '100%', height: '100%', objectFit: 'cover', display: 'block' }
+const thumbRemove = {
+  position: 'absolute', top: 4, right: 4,
+  width: 20, height: 20, borderRadius: '50%',
+  background: 'rgba(15,23,42,0.75)', border: 'none',
+  display: 'grid', placeItems: 'center', cursor: 'pointer', padding: 0,
+}
+const addTile = {
+  width: 78, height: 78, borderRadius: 8,
+  border: `1px dashed ${C.rule}`, background: 'transparent',
+  display: 'flex', flexDirection: 'column', alignItems: 'center',
+  justifyContent: 'center', gap: 5, cursor: 'pointer', fontFamily: 'inherit',
+}
 const successMark = {
-  width: 52,
-  height: 52,
-  borderRadius: '50%',
-  background: '#16A34A',
-  display: 'grid',
-  placeItems: 'center',
-  margin: '0 auto 18px',
+  width: 52, height: 52, borderRadius: '50%', background: '#16A34A',
+  display: 'grid', placeItems: 'center', margin: '0 auto 18px',
 }
-
 const successTitle = {
-  fontSize: 20,
-  fontWeight: 700,
-  color: C.ink,
-  margin: 0,
-  letterSpacing: '-0.015em',
+  fontSize: 20, fontWeight: 700, color: C.ink, margin: 0, letterSpacing: '-0.015em',
 }
-
 const successBody = {
-  fontSize: 14,
-  color: C.muted,
-  lineHeight: 1.55,
-  margin: '8px 0 0',
+  fontSize: 14, color: C.muted, lineHeight: 1.55, margin: '8px 0 0',
 }

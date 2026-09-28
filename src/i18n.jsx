@@ -74,6 +74,11 @@ const STRINGS = {
     reportAnother: 'Report something else',
     reportFailed: 'That did not send. Check your connection and try again.',
     needLocation: 'Find your schedule first so we know which address this is about.',
+    addPhoto: 'Add photo',
+    photos: 'Photos',
+    photosHint: 'A picture helps your provider find and fix the problem faster.',
+    removePhoto: 'Remove',
+    uploading: 'Uploading photos…',
   },
   es: {
     tagline: 'Sepa qué sacar a la acera.',
@@ -142,6 +147,11 @@ const STRINGS = {
     reportAnother: 'Reportar algo más',
     reportFailed: 'No se pudo enviar. Revise su conexión e intente otra vez.',
     needLocation: 'Busque su horario primero para saber de cuál dirección se trata.',	
+    addPhoto: 'Agregar foto',
+    photos: 'Fotos',
+    photosHint: 'Una foto ayuda a su proveedor a encontrar y resolver el problema más rápido.',
+    removePhoto: 'Quitar',
+    uploading: 'Subiendo fotos…',
   },
 }
 
