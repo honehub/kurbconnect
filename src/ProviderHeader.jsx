@@ -1,17 +1,12 @@
-import Logo from './Logo'
 import { C } from './styles'
 
-const KURB_BLUE = '#1d4ed8'
+const KURB_BLUE = '#0078FE'
 
 export default function ProviderHeader({ org }) {
-  // No provider resolved yet — KurbConnect stands on its own.
   if (!org) {
     return (
       <header style={{ ...wrap, borderBottom: `3px solid ${KURB_BLUE}` }}>
-        <span style={lockup}>
-          <Logo size={34} color={KURB_BLUE} />
-          KurbConnect
-        </span>
+        <img src="/kurbconnect-logo.png" alt="KurbConnect" style={lockupImg} />
       </header>
     )
   }
@@ -35,7 +30,7 @@ export default function ProviderHeader({ org }) {
       </div>
 
       <span style={byline}>
-        <Logo size={14} color={C.faint} />
+        <img src="/kurbconnect-mark.png" alt="" style={{ height: 20, display: 'block' }} />
         KurbConnect
       </span>
     </header>
@@ -51,14 +46,9 @@ const wrap = {
   background: C.paper,
 }
 
-const lockup = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 11,
-  fontSize: 22,
-  fontWeight: 700,
-  letterSpacing: '-0.025em',
-  color: C.ink,
+const lockupImg = {
+  height: 34,
+  display: 'block',
 }
 
 const left = {
@@ -100,9 +90,9 @@ const name = {
 const byline = {
   display: 'flex',
   alignItems: 'center',
-  gap: 5,
-  fontSize: 12,
-  fontWeight: 500,
-  color: C.faint,
+  gap: 7,
+  fontSize: 14,
+  fontWeight: 600,
+  color: C.muted,
   flexShrink: 0,
 }

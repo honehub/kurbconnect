@@ -36,7 +36,7 @@ export default function App() {
     return saved ? JSON.parse(saved) : null
   })
 
-  const accent = '#1d4ed8'
+  const accent = '#0078FE'
 
   useEffect(() => {
     if (pinned) {
