@@ -1,5 +1,5 @@
 {
-  "name": "trash-app",
+  "name": "kurbconnect",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -14,7 +14,6 @@
     "@capacitor/camera": "^8.2.4",
     "@capacitor/cli": "^8.5.2",
     "@capacitor/core": "^8.5.2",
-    "@capacitor/local-notifications": "^8.3.1",
     "@capacitor/push-notifications": "^8.1.2",
     "@supabase/supabase-js": "^2.116.0",
     "leaflet": "^1.9.4",

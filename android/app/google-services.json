@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:404008356099:android:dcc25bd1dfa04e1fc20136",
+        "android_client_info": {
+          "package_name": "com.honeaenterprises.kurbconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB__I30Yap4P0QqaYTJ1JTJ-4kdv0mGlF0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:404008356099:android:d7df6f31163563b1c20136",
         "android_client_info": {
           "package_name": "com.honeaenterprises.kurbly"

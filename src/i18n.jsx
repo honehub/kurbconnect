@@ -30,7 +30,7 @@ const STRINGS = {
     enterAgain: 'Enter address again',
     pinnedLocation: 'Pinned location',
     // Settings
-    openOnPhone: 'Open Kurbly on your phone to turn on reminders.',
+    openOnPhone: 'Open KurbConnect on your phone to turn on reminders.',
     pickupReminders: 'Pickup reminders',
     reminderSubtitle: 'Get notified before each collection',
     when: 'When',
@@ -128,7 +128,7 @@ const STRINGS = {
     checking: 'Verificando…',
     enterAgain: 'Ingresar dirección otra vez',
     pinnedLocation: 'Ubicación marcada',
-    openOnPhone: 'Abra Kurbly en su teléfono para activar los recordatorios.',
+    openOnPhone: 'Abra KurbConnect en su teléfono para activar los recordatorios.',
     pickupReminders: 'Recordatorios de recolección',
     reminderSubtitle: 'Reciba un aviso antes de cada recolección',
     when: 'Cuándo',

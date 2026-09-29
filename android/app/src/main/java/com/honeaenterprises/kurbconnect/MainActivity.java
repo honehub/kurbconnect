@@ -1,4 +1,4 @@
-package com.honeaenterprises.kurbly;
+package com.honeaenterprises.kurbconnect;
 
 import com.getcapacitor.BridgeActivity;
 

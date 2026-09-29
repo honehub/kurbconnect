@@ -5,7 +5,7 @@ import { S, C } from './styles'
 import { useLang } from './i18n'
 
 const APP_VERSION = '0.1.0'
-const PRIVACY_URL = 'https://honeaenterprises.com/kurbly'
+const PRIVACY_URL = 'https://honeaenterprises.com/kurbconnect'
 
 const EVENING = [16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5]
 const MORNING = [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5]

@@ -60,7 +60,7 @@ export async function reverseGeocode(lat, lng) {
 
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'Kurbly/1.0 (jim@honeaenterprises.com)' },
+      headers: { 'User-Agent': 'KurbConnect/1.0 (jim@honeaenterprises.com)' },
     })
     if (!res.ok) return null
     const json = await res.json()

@@ -1,7 +1,7 @@
 import Logo from './Logo'
 import { C } from './styles'
 
-export default function ProviderHeader({ org, kurblyColor = '#1d4ed8' }) {
+export default function ProviderHeader({ org }) {
   const brand = org?.primary_color || C.ink
   const accent = org?.secondary_color || brand
 
@@ -16,7 +16,7 @@ export default function ProviderHeader({ org, kurblyColor = '#1d4ed8' }) {
               {(org?.organization_name || 'K').charAt(0)}
             </div>
             <span style={{ ...name, color: brand }}>
-              {org?.organization_name || 'Kurbly'}
+              {org?.organization_name || 'KurbConnect'}
             </span>
           </>
         )}
@@ -24,7 +24,7 @@ export default function ProviderHeader({ org, kurblyColor = '#1d4ed8' }) {
 
       <span style={byline}>
         <Logo size={14} color={C.faint} />
-        Kurbly
+        KurbConnect
       </span>
     </header>
   )

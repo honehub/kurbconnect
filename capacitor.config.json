@@ -1,6 +1,6 @@
 {
-  "appId": "com.honeaenterprises.kurbly",
-  "appName": "Kurbly",
+  "appId": "com.honeaenterprises.kurbconnect",
+  "appName": "KurbConnect",
   "webDir": "dist",
   "plugins": {
     "CapacitorHttp": {
