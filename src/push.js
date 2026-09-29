@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core'
 import { PushNotifications } from '@capacitor/push-notifications'
-import { supabase, ORG_ID } from './supabase'
+import { supabase, getOrgId } from './supabase'
 
 let registered = false
 let deviceToken = null
@@ -31,7 +31,7 @@ export async function registerForPush(lat, lng, reminderHour = 19) {
       localStorage.setItem('pushToken', token.value)
       try {
         const { error } = await supabase.rpc('register_push_device', {
-          input_organization_id: ORG_ID,
+          input_organization_id: getOrgId(),
           input_token: token.value,
           input_platform: Capacitor.getPlatform(),
           input_lat: lat,

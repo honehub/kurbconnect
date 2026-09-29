@@ -103,6 +103,7 @@ const STRINGS = {
     keepGoing: 'Never mind',
     stoppedTitle: 'Notifications off',
     stoppedBody: 'This device has been removed. Look up your address again to turn them back on.',
+	noScheduleYet: 'We found your provider, but no collection schedule is set up for this address yet.',
   },
   es: {
     tagline: 'Sepa qué sacar a la acera.',
@@ -200,6 +201,7 @@ const STRINGS = {
     keepGoing: 'Cancelar',
     stoppedTitle: 'Notificaciones desactivadas',
     stoppedBody: 'Este dispositivo fue eliminado. Busque su dirección otra vez para reactivarlas.',
+    noScheduleYet: 'Encontramos su proveedor, pero aún no hay un horario de recolección para esta dirección.',
 
   },
 }

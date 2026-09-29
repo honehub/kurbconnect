@@ -1,18 +1,63 @@
-import { createClient } from '@supabase/supabase-js'
 import { Capacitor } from '@capacitor/core'
+import { createClient } from '@supabase/supabase-js'
 
 export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
 )
 
-export const ORG_ID = '0ad4df8a-f79a-4229-9c61-f942f751c313'
+// The provider is resolved from the resident's coordinates.
+// Nothing assumes an organization until an address lands inside one.
+let currentOrgId = null
 
-export async function getNextCollections(lat, lng) {
-  const { data, error } = await supabase.rpc('get_next_collections', {
-    input_organization_id: ORG_ID,
+export function getOrgId() {
+  return currentOrgId
+}
+
+export async function findOrganization(lat, lng) {
+  const { data, error } = await supabase.rpc('find_organization_for_point', {
     input_lat: lat,
     input_lng: lng,
+  })
+  if (error) throw error
+  const org = data?.[0] ?? null
+  currentOrgId = org?.organization_id ?? null
+  return org
+}
+
+export async function getSchedule(lat, lng, daysAhead = 60) {
+  if (!currentOrgId) return []
+  const { data, error } = await supabase.rpc('get_resident_schedule', {
+    input_organization_id: currentOrgId,
+    input_lat: lat,
+    input_lng: lng,
+    input_days_ahead: daysAhead,
+  })
+  if (error) throw error
+  return data
+}
+
+export async function getAnnouncements(lat, lng) {
+  if (!currentOrgId) return []
+  const { data, error } = await supabase.rpc('get_announcements', {
+    input_organization_id: currentOrgId,
+    input_lat: lat,
+    input_lng: lng,
+  })
+  if (error) throw error
+  return data || []
+}
+
+export async function submitReport({ lat, lng, type, description, contact, address }) {
+  if (!currentOrgId) throw new Error('No provider resolved for this location')
+  const { data, error } = await supabase.rpc('submit_service_request', {
+    input_organization_id: currentOrgId,
+    input_lat: lat,
+    input_lng: lng,
+    input_request_type: type,
+    input_description: description,
+    input_contact: contact || null,
+    input_address: address || null,
   })
   if (error) throw error
   return data
@@ -42,14 +87,6 @@ export async function geocodeAddress(address) {
   }
 }
 
-export async function getOrganization() {
-  const { data, error } = await supabase.rpc('get_public_organization', {
-    input_organization_id: ORG_ID,
-  })
-  if (error) throw error
-  return data?.[0] ?? null
-}
-
 export async function reverseGeocode(lat, lng) {
   const url = new URL('https://nominatim.openstreetmap.org/reverse')
   url.searchParams.set('lat', lat)
@@ -73,39 +110,4 @@ export async function reverseGeocode(lat, lng) {
   } catch {
     return null
   }
-}
-
-export async function getSchedule(lat, lng, daysAhead = 60) {
-  const { data, error } = await supabase.rpc('get_resident_schedule', {
-    input_organization_id: ORG_ID,
-    input_lat: lat,
-    input_lng: lng,
-    input_days_ahead: daysAhead,
-  })
-  if (error) throw error
-  return data
-}
-
-export async function getAnnouncements(lat, lng) {
-  const { data, error } = await supabase.rpc('get_announcements', {
-    input_organization_id: ORG_ID,
-    input_lat: lat,
-    input_lng: lng,
-  })
-  if (error) throw error
-  return data || []
-}
-
-export async function submitReport({ lat, lng, type, description, contact, address }) {
-  const { data, error } = await supabase.rpc('submit_service_request', {
-    input_organization_id: ORG_ID,
-    input_lat: lat,
-    input_lng: lng,
-    input_request_type: type,
-    input_description: description,
-    input_contact: contact || null,
-    input_address: address || null,
-  })
-  if (error) throw error
-  return data
 }

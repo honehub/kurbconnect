@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
-import { geocodeAddress, getOrganization, reverseGeocode, getSchedule, getAnnouncements } from './supabase'
+import { geocodeAddress, reverseGeocode, getSchedule, getAnnouncements, findOrganization } from './supabase'
 import { registerForPush } from './push'
 import BottomNav from './BottomNav'
 import ScheduleView from './ScheduleView'
 import SettingsView from './SettingsView'
 import AlertsView from './AlertsView'
 import ReportView from './ReportView'
-import Logo from './Logo'
+import ProviderHeader from './ProviderHeader'
 import { S } from './styles'
 import { useLang } from './i18n'
-import ProviderHeader from './ProviderHeader'
 
 export default function App() {
   const { t } = useLang()
@@ -38,10 +37,8 @@ export default function App() {
   })
 
   const accent = '#1d4ed8'
-  const brand = org?.primary_color || accent
 
   useEffect(() => {
-    getOrganization().then(setOrg).catch(() => {})
     if (pinned) {
       setBusy(true)
       loadSchedule(pinned.lat, pinned.lng).finally(() => setBusy(false))
@@ -112,12 +109,25 @@ export default function App() {
   }
 
   async function loadSchedule(lat, lng) {
+    // Who serves this point? Nothing is assumed until this resolves.
+    const provider = await findOrganization(lat, lng)
+    if (!provider) {
+      setStatus(t.outsideArea)
+      setCollections(null)
+      setOrg(null)
+      setAlerts([])
+      setCoords(null)
+      return false
+    }
+    setOrg(provider)
+
     const data = await getSchedule(lat, lng, 60)
     if (!data || data.length === 0) {
-      setStatus(t.outsideArea)
+      setStatus(t.noScheduleYet)
       setCollections(null)
       return false
     }
+
     setCollections(data)
     setStatus(null)
     setCoords({ lat, lng })
@@ -137,7 +147,6 @@ export default function App() {
   return (
     <div style={S.page}>
       <div style={S.shell}>
-
         <ProviderHeader org={org} />
 
         {tab === 'home' && (
