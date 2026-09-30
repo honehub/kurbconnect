@@ -111,3 +111,19 @@ export async function reverseGeocode(lat, lng) {
     return null
   }
 }
+
+// Fire-and-forget: never let logging break a lookup.
+export function logLookup({ raw, geocoded, inArea, lat, lng, source = 'address' }) {
+  supabase
+    .rpc('log_lookup', {
+      input_raw: raw,
+      input_geocoded: geocoded,
+      input_in_area: inArea,
+      input_organization_id: currentOrgId,
+      input_lat: lat ?? null,
+      input_lng: lng ?? null,
+      input_source: source,
+    })
+    .then(() => {})
+    .catch(() => {})
+}

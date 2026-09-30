@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react'
-import { geocodeAddress, reverseGeocode, getSchedule, getAnnouncements, findOrganization } from './supabase'
+import {
+  geocodeAddress,
+  reverseGeocode,
+  getSchedule,
+  getAnnouncements,
+  findOrganization,
+  logLookup,
+} from './supabase'
 import { registerForPush } from './push'
 import BottomNav from './BottomNav'
 import ScheduleView from './ScheduleView'
@@ -64,16 +71,25 @@ export default function App() {
     setBusy(true)
     setStatus(null)
     setShowMap(false)
+    const typed = address
     try {
-      const place = await geocodeAddress(address)
+      const place = await geocodeAddress(typed)
       if (!place) {
+        logLookup({ raw: typed, geocoded: false, inArea: false })
         setStatus(t.notFound)
         setShowMap(true)
         return
       }
       const ok = await loadSchedule(place.lat, place.lng)
+      logLookup({
+        raw: typed,
+        geocoded: true,
+        inArea: ok,
+        lat: place.lat,
+        lng: place.lng,
+      })
       if (ok) {
-        localStorage.setItem('address', address)
+        localStorage.setItem('address', typed)
         localStorage.removeItem('pinned')
         setPinned(null)
         setEditing(false)
@@ -90,6 +106,14 @@ export default function App() {
     setStatus(null)
     try {
       const found = await loadSchedule(pos.lat, pos.lng)
+      logLookup({
+        raw: address,
+        geocoded: true,
+        inArea: found,
+        lat: pos.lat,
+        lng: pos.lng,
+        source: 'pin',
+      })
       if (found) {
         setShowMap(false)
         setEditing(false)
