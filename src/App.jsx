@@ -101,6 +101,34 @@ export default function App() {
     }
   }
 
+  async function useSuggestion(s) {
+    setBusy(true)
+    setStatus(null)
+    setShowMap(false)
+    try {
+      const ok = await loadSchedule(s.lat, s.lng)
+      logLookup({
+        raw: s.label,
+        geocoded: true,
+        inArea: ok,
+        lat: s.lat,
+        lng: s.lng,
+        source: 'address',
+      })
+      if (ok) {
+        setAddress(s.label)
+        localStorage.setItem('address', s.label)
+        localStorage.removeItem('pinned')
+        setPinned(null)
+        setEditing(false)
+      }
+    } catch (e) {
+      setStatus(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function usePin(pos) {
     setBusy(true)
     setStatus(null)
@@ -183,6 +211,7 @@ export default function App() {
             accent={accent}
             showMap={showMap}
             onLookup={lookup}
+            onSelectAddress={useSuggestion}
             onUsePin={usePin}
             pinned={pinned}
             onCancelMap={() => { setShowMap(false); setStatus(null) }}

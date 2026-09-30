@@ -1,10 +1,11 @@
 import PinMap, { SAN_ANGELO } from './PinMap'
 import { S, ICONS, catColor, shortDate, weekday, formatDate, relative } from './styles'
 import { useLang, CATEGORY_LABELS } from './i18n'
+import AddressInput from './AddressInput'
 
 export default function ScheduleView({
   address, setAddress, collections, status, busy, accent,
-  showMap, onLookup, onUsePin, pinned, onCancelMap, editing, setEditing,
+  showMap, onLookup, onSelectAddress, onUsePin, pinned, onCancelMap, editing, setEditing,
 }) {
   const { t, lang, locale } = useLang()
   const labels = CATEGORY_LABELS[lang]
@@ -22,14 +23,12 @@ export default function ScheduleView({
 
         <div style={S.section}>
           <label style={S.label} htmlFor="addr">{t.yourAddress}</label>
-          <input
-            id="addr"
+          <AddressInput
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onLookup()}
+            onChange={setAddress}
+            onSelect={onSelectAddress}
+            onSubmit={onLookup}
             placeholder={t.addressPlaceholder}
-            style={S.input}
-            autoComplete="street-address"
           />
           <button
             onClick={onLookup}

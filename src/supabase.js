@@ -127,3 +127,11 @@ export function logLookup({ raw, geocoded, inArea, lat, lng, source = 'address' 
     .then(() => {})
     .catch(() => {})
 }
+export async function searchAddresses(query, limit = 8) {
+  const { data, error } = await supabase.rpc('search_addresses', {
+    input_query: query,
+    input_limit: limit,
+  })
+  if (error) return []
+  return data || []
+}
