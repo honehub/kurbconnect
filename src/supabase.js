@@ -132,6 +132,6 @@ export async function searchAddresses(query, limit = 8) {
     input_query: query,
     input_limit: limit,
   })
-  if (error) return []
+  if (error) { console.error('search_addresses:', error); return [] }
   return data || []
 }

@@ -3,6 +3,8 @@ import { Trash2, Recycle, Truck } from 'lucide-react'
 export const ICONS = { trash: Trash2, recycle: Recycle, truck: Truck }
 
 export const C = {
+  navy: '#082458',
+  brand: '#007CFC',
   ink: '#0F172A',
   body: '#334155',
   muted: '#64748B',
