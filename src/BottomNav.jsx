@@ -1,92 +1,88 @@
-import { Calendar, Megaphone, Camera, Settings } from 'lucide-react'
+import { Home, Calendar, MessageSquare, MoreHorizontal } from 'lucide-react'
+import { C } from './styles'
 import { useLang } from './i18n'
+
+const BAR = {
+  position: 'fixed',
+  left: 0,
+  right: 0,
+  bottom: 0,
+  display: 'flex',
+  background: C.paper,
+  borderTop: `1px solid ${C.rule}`,
+  paddingBottom: 'env(safe-area-inset-bottom)',
+  zIndex: 40,
+}
+
+const INNER = { display: 'flex', width: '100%', maxWidth: 480, margin: '0 auto' }
+
+const ITEM = {
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 4,
+  padding: '9px 0 7px',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  font: 'inherit',
+  position: 'relative',
+}
+
+const LABEL = { fontSize: 11, fontWeight: 500, letterSpacing: '-0.01em' }
+
+const BADGE = {
+  position: 'absolute',
+  top: 4,
+  left: 'calc(50% + 6px)',
+  minWidth: 17,
+  height: 17,
+  padding: '0 5px',
+  borderRadius: 9,
+  background: '#DC2626',
+  color: '#FFFFFF',
+  fontSize: 10,
+  fontWeight: 700,
+  lineHeight: '17px',
+  textAlign: 'center',
+  boxSizing: 'border-box',
+}
 
 export default function BottomNav({ tab, setTab, accent, alertCount = 0 }) {
   const { t } = useLang()
 
   const tabs = [
-    { id: 'home', label: t.navSchedule, Icon: Calendar },
-    { id: 'alerts', label: t.navAlerts, Icon: Megaphone, badge: alertCount },
-    { id: 'report', label: t.navReport, Icon: Camera },
-    { id: 'settings', label: t.navSettings, Icon: Settings },
+    { key: 'home',     label: t.navHome,     Icon: Home },
+    { key: 'calendar', label: t.navCalendar, Icon: Calendar },
+    { key: 'messages', label: t.navMessages, Icon: MessageSquare, badge: alertCount },
+    { key: 'more',     label: t.navMore,     Icon: MoreHorizontal },
   ]
 
   return (
-    <nav style={bar}>
-      <div style={inner}>
-        {tabs.map((tb) => {
-          const active = tab === tb.id
+    <nav style={BAR}>
+      <div style={INNER}>
+        {tabs.map(({ key, label, Icon, badge }) => {
+          const on = tab === key
           return (
             <button
-              key={tb.id}
-              onClick={() => setTab(tb.id)}
-              style={{
-                ...item,
-                color: active ? accent : '#9ca3af',
-                fontWeight: active ? 600 : 500,
-              }}
+              key={key}
+              onClick={() => setTab(key)}
+              style={ITEM}
+              aria-current={on ? 'page' : undefined}
+              aria-label={label}
             >
-              <span style={iconWrap}>
-                <tb.Icon size={21} strokeWidth={active ? 2.2 : 1.8} />
-                {tb.badge > 0 && <span style={badge}>{tb.badge}</span>}
-              </span>
-              <span style={{ fontSize: 11 }}>{tb.label}</span>
+              <Icon
+                size={23}
+                strokeWidth={on ? 2.3 : 1.8}
+                color={on ? accent : C.faint}
+              />
+              <span style={{ ...LABEL, color: on ? accent : C.faint }}>{label}</span>
+              {badge > 0 && <span style={BADGE}>{badge > 99 ? '99+' : badge}</span>}
             </button>
           )
         })}
       </div>
     </nav>
   )
-}
-
-const bar = {
-  position: 'fixed',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  background: '#fff',
-  borderTop: '1px solid #e5e7eb',
-  paddingBottom: 'env(safe-area-inset-bottom)',
-  zIndex: 1000,
-}
-
-const inner = {
-  maxWidth: 440,
-  margin: '0 auto',
-  display: 'grid',
-  gridTemplateColumns: 'repeat(4, 1fr)',
-}
-
-const item = {
-  background: 'none',
-  border: 'none',
-  padding: '10px 4px 8px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 3,
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-}
-
-const iconWrap = {
-  position: 'relative',
-  fontSize: 20,
-  lineHeight: 1,
-}
-
-const badge = {
-  position: 'absolute',
-  top: -4,
-  right: -8,
-  background: '#dc2626',
-  color: '#fff',
-  fontSize: 10,
-  fontWeight: 700,
-  minWidth: 16,
-  height: 16,
-  borderRadius: 8,
-  display: 'grid',
-  placeItems: 'center',
-  padding: '0 4px',
 }

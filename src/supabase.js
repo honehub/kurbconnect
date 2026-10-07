@@ -135,3 +135,45 @@ export async function searchAddresses(query, limit = 8) {
   if (error) { console.error('search_addresses:', error); return [] }
   return data || []
 }
+
+export async function getProviderInfo(organizationId, lat = null, lng = null) {
+  const { data, error } = await supabase.rpc('get_provider_info', {
+    input_organization_id: organizationId,
+    input_lat: lat,
+    input_lng: lng,
+  })
+  if (error) { console.error('get_provider_info:', error); return null }
+  return data?.[0] || null
+}
+
+export async function getGuidelines(organizationId, language = 'en') {
+  const { data, error } = await supabase.rpc('get_collection_guidelines', {
+    input_organization_id: organizationId,
+    input_language: language,
+  })
+  if (error) { console.error('get_collection_guidelines:', error); return [] }
+  return data || []
+}
+
+// Month window for the calendar. Home keeps its cheaper 60-day call.
+export async function getCollectionsInRange(organizationId, lat, lng, from, to) {
+  const { data, error } = await supabase.rpc('get_collections_in_range', {
+    input_organization_id: organizationId,
+    input_lat: lat,
+    input_lng: lng,
+    input_from: from,
+    input_to: to,
+  })
+  if (error) { console.error('get_collections_in_range:', error); return [] }
+  return data || []
+}
+
+export async function getHolidays(organizationId, from, to) {
+  const { data, error } = await supabase.rpc('get_holidays', {
+    input_organization_id: organizationId,
+    input_from: from,
+    input_to: to,
+  })
+  if (error) { console.error('get_holidays:', error); return [] }
+  return data || []
+}

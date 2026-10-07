@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Trash2, Recycle, Truck, Phone, Mail, Globe, ExternalLink } from 'lucide-react'
+import {
+  Trash2, Phone, Mail, Globe, ExternalLink, Clock, Bell, BellOff,
+  CalendarDays, Building2, FileText, ShieldCheck, ChevronRight,
+} from 'lucide-react'
 import { loadPreferences, savePreferences, getDeviceToken, deactivateDevice } from './push'
-import { S, C } from './styles'
+import { S, C, catColor } from './styles'
+import ServiceIcon from './ServiceIcon'
 import { useLang } from './i18n'
 
-const APP_VERSION = '0.1.0'
+// Injected from package.json at build time; see vite.config.js
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 const PRIVACY_URL = 'https://honeaenterprises.com/kurbconnect'
 
 const EVENING = [16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5]
@@ -29,9 +34,9 @@ export default function SettingsView({ accent, org }) {
   const hasDevice = !!getDeviceToken()
 
   const CATEGORIES = [
-    { id: 'trash', label: t.trash, Icon: Trash2 },
-    { id: 'recycling', label: t.recycling, Icon: Recycle },
-    { id: 'bulk', label: t.bulk, Icon: Truck },
+    { id: 'trash', label: t.trash },
+    { id: 'recycling', label: t.recycling },
+    { id: 'bulk', label: t.bulk },
   ]
 
   useEffect(() => {
@@ -106,7 +111,7 @@ export default function SettingsView({ accent, org }) {
   const showMorning = prefs.reminder_timing === 'day_of' || prefs.reminder_timing === 'both'
 
   return (
-    <div style={{ paddingTop: 4 }}>
+    <div>
       {!hasDevice && <div style={{ ...S.notice, marginTop: 12 }}>{t.openOnPhone}</div>}
 
       {isPaused && (
@@ -132,8 +137,8 @@ export default function SettingsView({ accent, org }) {
       {/* ── Pickup reminders ─────────────────────────── */}
       <div style={S.groupHead}>{t.pickupReminders}</div>
       <div style={S.card}>
-        <div style={prefs.reminders_enabled ? S.settingRow : S.settingRowLast}>
-          <div style={{ minWidth: 0 }}>
+        <div style={{ ...(prefs.reminders_enabled ? S.setRow : S.setRowLast), gap: 16 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
             <div style={S.settingName}>{t.pickupReminders}</div>
             <div style={S.settingHint}>{t.reminderSubtitle}</div>
           </div>
@@ -146,8 +151,10 @@ export default function SettingsView({ accent, org }) {
 
         {prefs.reminders_enabled && (
           <>
-            <div style={{ ...S.cardPad, borderBottom: `1px solid ${C.ruleSoft}` }}>
-              <div style={S.label}>{t.when}</div>
+            <div style={{ padding: '13px 15px 14px' }}>
+              <div style={{ ...S.label, fontSize: 15.5, fontWeight: 700, color: C.ink }}>
+                {t.when}
+              </div>
               <Segment
                 value={prefs.reminder_timing}
                 onChange={(v) => update({ reminder_timing: v })}
@@ -157,72 +164,80 @@ export default function SettingsView({ accent, org }) {
                   { id: 'both', label: t.bothTimes },
                 ]}
               />
-
-              {showEvening && (
-                <>
-                  <div style={{ ...S.label, marginTop: 16 }}>{t.eveningTime}</div>
-                  <select
-                    value={toVal(prefs.reminder_hour, prefs.reminder_minute)}
-                    onChange={(e) => {
-                      const { h, m } = toHM(Number(e.target.value))
-                      update({ reminder_hour: h, reminder_minute: m })
-                    }}
-                    style={S.input}
-                  >
-                    {EVENING.map((v) => (
-                      <option key={v} value={v}>{timeLabel(v, locale)}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-
-              {showMorning && (
-                <>
-                  <div style={{ ...S.label, marginTop: 16 }}>{t.morningTime}</div>
-                  <select
-                    value={toVal(prefs.morning_hour, prefs.morning_minute)}
-                    onChange={(e) => {
-                      const { h, m } = toHM(Number(e.target.value))
-                      update({ morning_hour: h, morning_minute: m })
-                    }}
-                    style={S.input}
-                  >
-                    {MORNING.map((v) => (
-                      <option key={v} value={v}>{timeLabel(v, locale)}</option>
-                    ))}
-                  </select>
-                </>
-              )}
             </div>
 
-            <div style={{ padding: '14px 16px 6px' }}>
-              <div style={S.label}>{t.remindMeAbout}</div>
-            </div>
-            {CATEGORIES.map(({ id, label, Icon }, i) => (
-              <div
-                key={id}
-                style={i === CATEGORIES.length - 1 ? S.settingRowLast : S.settingRow}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Icon size={18} color={C.muted} strokeWidth={1.8} />
-                  <span style={S.settingName}>{label}</span>
-                </span>
-                <Toggle
-                  on={prefs.enabled_categories.includes(id)}
-                  accent={accent}
-                  onChange={() => toggleCategory(id)}
-                />
-              </div>
-            ))}
+            {showEvening && (
+              <TimeRow
+                Icon={Clock}
+                label={t.eveningBefore}
+                value={toVal(prefs.reminder_hour, prefs.reminder_minute)}
+                options={EVENING}
+                locale={locale}
+                last={!showMorning}
+                onChange={(v) => {
+                  const { h, m } = toHM(v)
+                  update({ reminder_hour: h, reminder_minute: m })
+                }}
+              />
+            )}
+
+            {showMorning && (
+              <TimeRow
+                Icon={Clock}
+                label={t.morningOfLabel}
+                value={toVal(prefs.morning_hour, prefs.morning_minute)}
+                options={MORNING}
+                locale={locale}
+                last
+                onChange={(v) => {
+                  const { h, m } = toHM(v)
+                  update({ morning_hour: h, morning_minute: m })
+                }}
+              />
+            )}
           </>
         )}
       </div>
 
+      {/* ── Remind me about ──────────────────────────── */}
+      {prefs.reminders_enabled && (
+        <>
+          <div style={S.groupHead}>{t.remindMeAbout}</div>
+          <div style={S.card}>
+            {CATEGORIES.map(({ id, label }, i) => {
+              const cc = catColor(id === 'bulk' ? 'bulk' : id)
+              return (
+                <div
+                  key={id}
+                  style={{
+                    ...(i === CATEGORIES.length - 1 ? S.setRowLast : S.setRow),
+                    gap: 13,
+                  }}
+                >
+                  <span style={{ ...S.iconTile, background: cc.tint }}>
+                    <ServiceIcon category={id} size={19} color={cc.solid} />
+                  </span>
+                  <span style={{ ...S.settingName, flex: 1 }}>{label}</span>
+                  <Toggle
+                    on={prefs.enabled_categories.includes(id)}
+                    accent={accent}
+                    onChange={() => toggleCategory(id)}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+
       {/* ── Service alerts ───────────────────────────── */}
       <div style={S.groupHead}>{t.serviceAlerts}</div>
       <div style={S.card}>
-        <div style={S.settingRowLast}>
-          <div style={{ minWidth: 0 }}>
+        <div style={{ ...S.setRowLast, gap: 13 }}>
+          <span style={{ ...S.iconTile, background: '#EFF6FF' }}>
+            <Bell size={19} color={C.brand} strokeWidth={2} />
+          </span>
+          <div style={{ minWidth: 0, flex: 1 }}>
             <div style={S.settingName}>{t.serviceAlerts}</div>
             <div style={S.settingHint}>{t.serviceAlertsHint}</div>
           </div>
@@ -237,52 +252,65 @@ export default function SettingsView({ accent, org }) {
       {/* ── Pause ────────────────────────────────────── */}
       <div style={S.groupHead}>{t.pauseReminders}</div>
       <div style={S.card}>
-        <div style={S.cardPad}>
-          <div style={{ ...S.settingHint, marginTop: 0, marginBottom: 10 }}>
-            {t.pauseHint}
+        <div style={{ ...S.setRow, gap: 13, alignItems: 'flex-start' }}>
+          <span style={{ ...S.iconTile, background: C.ruleSoft }}>
+            <BellOff size={19} color={C.muted} strokeWidth={2} />
+          </span>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={S.settingName}>{t.pauseReminders}</div>
+            <div style={S.settingHint}>{t.pauseHint}</div>
           </div>
+        </div>
+        <label style={{ ...S.setRowLast, gap: 13, cursor: 'pointer' }}>
+          <CalendarDays size={19} color={C.muted} strokeWidth={1.9} />
+          <span style={{ ...S.settingName, flex: 1, whiteSpace: 'nowrap' }}>
+            {t.chooseDate}
+          </span>
           <input
             type="date"
             value={prefs.paused_until || ''}
             min={new Date().toISOString().slice(0, 10)}
             onChange={(e) => update({ paused_until: e.target.value || null })}
-            style={S.input}
+            style={bareInput}
           />
-        </div>
+          <ChevronRight size={18} color={C.faint} />
+        </label>
       </div>
 
       {/* ── Language ─────────────────────────────────── */}
       <div style={S.groupHead}>{t.language}</div>
       <div style={S.card}>
-        <div style={S.cardPad}>
-          <Segment
-            value={lang}
-            onChange={(v) => update({ language: v })}
-            options={[
-              { id: 'en', label: 'English' },
-              { id: 'es', label: 'Español' },
-            ]}
-          />
+        <div style={{ ...S.setRowLast, gap: 13 }}>
+          <Globe size={20} color={C.muted} strokeWidth={1.9} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Segment
+              value={lang}
+              onChange={(v) => update({ language: v })}
+              options={[
+                { id: 'en', label: 'English' },
+                { id: 'es', label: 'Español' },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
       {/* ── Provider ─────────────────────────────────── */}
-      {org && (org.phone || org.email || org.website) && (
+      {org && (org.organization_name || org.phone || org.email || org.website) && (
         <>
           <div style={S.groupHead}>{t.provider}</div>
           <div style={S.card}>
             {org.organization_name && (
-              <div style={{ ...S.settingRow, display: 'block' }}>
-                <div style={{ ...S.settingName, fontWeight: 600 }}>
-                  {org.organization_name}
-                </div>
+              <div style={{ ...S.setRow, gap: 13 }}>
+                <Building2 size={19} color={C.muted} strokeWidth={1.9} />
+                <span style={{ ...S.settingName, flex: 1 }}>{org.organization_name}</span>
               </div>
             )}
             {org.phone && (
               <LinkRow href={`tel:${org.phone}`} Icon={Phone} label={org.phone} accent={accent} />
             )}
             {org.email && (
-              <LinkRow href={`mailto:${org.email}`} Icon={Mail} label={org.email} accent={accent} />
+              <LinkRow href={`mailto:${org.email}`} Icon={Mail} label={org.email} accent={accent} last={!org.website} />
             )}
             {org.website && (
               <LinkRow href={org.website} Icon={Globe} label={t.visitWebsite} accent={accent} external last />
@@ -294,13 +322,14 @@ export default function SettingsView({ accent, org }) {
       {/* ── About ────────────────────────────────────── */}
       <div style={S.groupHead}>{t.about}</div>
       <div style={S.card}>
-        <div style={S.settingRow}>
-          <span style={S.settingName}>{t.version}</span>
-          <span style={S.muted}>{APP_VERSION}</span>
+        <div style={{ ...S.setRow, gap: 13 }}>
+          <FileText size={19} color={C.muted} strokeWidth={1.9} />
+          <span style={{ ...S.settingName, flex: 1 }}>{t.version}</span>
+          <span style={S.valueRight}>{APP_VERSION}</span>
         </div>
         <LinkRow
           href={PRIVACY_URL}
-          Icon={ExternalLink}
+          Icon={ShieldCheck}
           label={t.privacyPolicy}
           accent={accent}
           external
@@ -309,29 +338,29 @@ export default function SettingsView({ accent, org }) {
       </div>
 
       {/* ── Stop ─────────────────────────────────────── */}
-      <div style={{ padding: '26px 14px 10px' }}>
-        {confirmStop ? (
-          <>
-            <div style={{ ...S.notice, margin: '0 0 12px' }}>{t.stopConfirm}</div>
-            <button onClick={stopEverything} style={{ ...S.button, background: '#B91C1C', marginTop: 0 }}>
-              {t.stopConfirmAction}
-            </button>
-            <button onClick={() => setConfirmStop(false)} style={S.buttonQuiet}>
-              {t.keepGoing}
-            </button>
-          </>
-        ) : (
+      {confirmStop ? (
+        <div style={{ padding: '20px 14px 10px' }}>
+          <div style={{ ...S.notice, margin: '0 0 12px' }}>{t.stopConfirm}</div>
           <button
-            onClick={() => setConfirmStop(true)}
-            style={{ ...S.buttonQuiet, marginTop: 0, color: '#B91C1C', borderColor: '#FECACA' }}
+            onClick={stopEverything}
+            style={{ ...S.button, background: '#B91C1C', marginTop: 0 }}
           >
-            {t.stopEverything}
+            {t.stopConfirmAction}
           </button>
-        )}
-      </div>
+          <button onClick={() => setConfirmStop(false)} style={S.buttonQuiet}>
+            {t.keepGoing}
+          </button>
+        </div>
+      ) : (
+        <button onClick={() => setConfirmStop(true)} style={S.dangerCard}>
+          <Trash2 size={20} color="#DC2626" strokeWidth={2} />
+          <span style={S.dangerText}>{t.stopEverything}</span>
+          <ChevronRight size={18} color="#DC2626" />
+        </button>
+      )}
 
       {saved && (
-        <div style={{ ...S.muted, textAlign: 'center', color: C.faint, paddingBottom: 12 }}>
+        <div style={{ ...S.muted, textAlign: 'center', color: C.faint, padding: '14px 0 4px' }}>
           {t.saved}
         </div>
       )}
@@ -339,32 +368,54 @@ export default function SettingsView({ accent, org }) {
   )
 }
 
+function TimeRow({ Icon, label, value, options, locale, onChange, last }) {
+  return (
+    <label style={{ ...(last ? S.setRowLast : S.setRow), gap: 13, cursor: 'pointer' }}>
+      <Icon size={19} color={C.muted} strokeWidth={1.9} />
+      <span style={{ ...S.settingName, flex: 1 }}>{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        style={bareInput}
+      >
+        {options.map((v) => (
+          <option key={v} value={v}>{timeLabel(v, locale)}</option>
+        ))}
+      </select>
+      <ChevronRight size={18} color={C.faint} />
+    </label>
+  )
+}
+
 function LinkRow({ href, Icon, label, accent, external, last }) {
   return (
-    <a href={href}
-       target={external ? '_blank' : undefined}
-       rel={external ? 'noreferrer' : undefined}
-       style={{ ...linkRow, borderBottom: last ? 'none' : `1px solid ${C.ruleSoft}` }}>
-      <Icon size={18} color={accent} strokeWidth={1.8} />
-      <span style={{ color: C.ink, fontSize: 15 }}>{label}</span>
+    <a
+      href={href}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer' : undefined}
+      style={{ ...(last ? S.setRowLast : S.setRow), gap: 13 }}
+    >
+      <Icon size={19} color={accent} strokeWidth={1.9} />
+      <span style={{ ...S.settingName, flex: 1 }}>{label}</span>
+      {external ? (
+        <ExternalLink size={17} color={C.faint} />
+      ) : (
+        <ChevronRight size={18} color={C.faint} />
+      )}
     </a>
   )
 }
 
 function Segment({ value, onChange, options }) {
   return (
-    <div style={{ ...segment, gridTemplateColumns: `repeat(${options.length}, 1fr)` }}>
+    <div style={{ ...S.segTrack, gridTemplateColumns: `repeat(${options.length}, 1fr)` }}>
       {options.map((opt) => {
         const active = value === opt.id
         return (
           <button
             key={opt.id}
             onClick={() => onChange(opt.id)}
-            style={{
-              ...segItem,
-              background: active ? C.ink : 'transparent',
-              color: active ? C.paper : C.muted,
-            }}
+            style={{ ...S.segBtn, ...(active ? S.segBtnOn : null) }}
           >
             {opt.label}
           </button>
@@ -380,19 +431,34 @@ function Toggle({ on, onChange, accent }) {
       onClick={() => onChange(!on)}
       aria-pressed={on}
       style={{
-        width: 44, height: 26, borderRadius: 13, border: 'none',
+        width: 50, height: 30, borderRadius: 15, border: 'none',
         background: on ? accent : C.rule,
         position: 'relative', cursor: 'pointer',
         transition: 'background 0.15s', flexShrink: 0, padding: 0,
       }}
     >
       <span style={{
-        position: 'absolute', top: 3, left: on ? 21 : 3,
-        width: 20, height: 20, borderRadius: '50%',
+        position: 'absolute', top: 3, left: on ? 23 : 3,
+        width: 24, height: 24, borderRadius: '50%',
         background: '#fff', transition: 'left 0.15s',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
       }} />
     </button>
   )
+}
+
+const bareInput = {
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  border: 'none',
+  background: 'none',
+  font: 'inherit',
+  fontSize: 15,
+  color: C.muted,
+  textAlign: 'right',
+  padding: 0,
+  cursor: 'pointer',
+  maxWidth: 128,
 }
 
 const pausedBar = {
@@ -404,34 +470,7 @@ const pausedBar = {
   padding: '11px 14px',
   background: '#FFFBEB',
   border: '1px solid #FDE68A',
-  borderRadius: 8,
+  borderRadius: 10,
   fontSize: 14,
   color: '#B45309',
-}
-
-const linkRow = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 13,
-  padding: '14px 16px',
-  textDecoration: 'none',
-}
-
-const segment = {
-  display: 'grid',
-  gap: 2,
-  background: C.ruleSoft,
-  borderRadius: 7,
-  padding: 3,
-}
-
-const segItem = {
-  padding: '9px 6px',
-  border: 'none',
-  borderRadius: 5,
-  fontSize: 14,
-  fontWeight: 500,
-  cursor: 'pointer',
-  fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-  transition: 'background 0.12s',
 }

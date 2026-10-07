@@ -1,19 +1,20 @@
 import PinMap, { SAN_ANGELO } from './PinMap'
-import { S, ICONS, catColor, shortDate, weekday, formatDate, relative } from './styles'
-import { useLang, CATEGORY_LABELS } from './i18n'
+import { AlertCircle, ChevronRight } from 'lucide-react'
+import { S, C } from './styles'
+import { useLang } from './i18n'
 import AddressInput from './AddressInput'
+import DayCard from './DayCard'
 
 export default function ScheduleView({
   address, setAddress, collections, status, busy, accent,
   showMap, onLookup, onSelectAddress, onUsePin, pinned, onCancelMap, editing, setEditing,
+  onReport, setoutTime, reminder, onReminder, onGuidelines,
 }) {
-  const { t, lang, locale } = useLang()
-  const labels = CATEGORY_LABELS[lang]
-  const name = (c) => labels[c.service_category] || c.service_name
+  const { t } = useLang()
 
   const groups = groupByDate(collections)
   const first = groups[0]
-  const later = groups.slice(1)
+  const later = groups.slice(1, 5)
   const hasSchedule = groups.length > 0
 
   if (!hasSchedule || editing) {
@@ -63,80 +64,74 @@ export default function ScheduleView({
     )
   }
 
-  const leadColor = catColor(first.items[0].service_category).solid
-
   return (
-    <>
-      <div style={S.addressBar}>
-        <span style={S.addressText}>{address}</span>
-        <button
-          onClick={() => setEditing(true)}
-          style={{ ...S.textLink, color: accent }}
-        >
-          {t.change}
-        </button>
-      </div>
-
-      <div style={S.hero}>
-        <div style={{ ...S.heroRail, background: leadColor }} />
-        <h2 style={S.heroDay}>{relative(first.date, t)}</h2>
-        <div style={S.heroDate}>{formatDate(first.date, locale)}</div>
-
-        <div style={S.heroServices}>
-          {first.items.map((c) => {
-            const Icon = ICONS[c.icon_name] || ICONS.trash
-            const col = catColor(c.service_category)
-            return (
-              <div
-                key={c.service_category}
-                style={{ ...S.heroServiceRow, background: col.tint }}
-              >
-                <Icon size={23} color={col.solid} strokeWidth={1.9} />
-                <div>
-                  <div style={{ ...S.heroServiceName, color: col.solid }}>
-                    {name(c)}
-                  </div>
-                  {c.schedule_changed && (
-                    <div style={S.changed}>{c.change_reason}</div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
+    <div style={{ paddingTop: 16 }}>
+      <DayCard
+        group={first}
+        setoutTime={setoutTime}
+        reminder={reminder}
+        onReminder={onReminder}
+        lead
+      />
 
       {later.length > 0 && (
         <>
           <div style={S.agendaHead}>{t.comingUp}</div>
           {later.map((g) => (
-            <div key={g.date} style={S.agendaRow}>
-              <div>
-                <div style={S.agendaDate}>{shortDate(g.date, locale)}</div>
-                <div style={S.agendaWeekday}>{weekday(g.date, locale)}</div>
-              </div>
-              <div style={S.agendaServices}>
-                {g.items.map((c) => (
-                  <div key={c.service_category} style={S.agendaService}>
-                    <span style={{ ...S.dot, background: catColor(c.service_category).solid }} />
-                    <span>
-                      {name(c)}
-                      {c.schedule_changed && (
-                        <span style={S.changed}> {c.change_reason}</span>
-                      )}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <DayCard
+              key={g.date}
+              group={g}
+              setoutTime={setoutTime}
+              onGuidelines={onGuidelines}
+            />
           ))}
         </>
       )}
-    </>
+
+      {onReport && (
+        <button
+          onClick={onReport}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            width: 'calc(100% - 28px)',
+            margin: '4px 14px 0',
+            padding: '14px 15px',
+            textAlign: 'left',
+            background: C.paper,
+            border: `1px solid ${C.rule}`,
+            borderRadius: 16,
+            font: 'inherit',
+            cursor: 'pointer',
+            boxSizing: 'border-box',
+          }}
+        >
+          <span
+            style={{
+              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+              background: accent, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <AlertCircle size={20} color="#FFFFFF" strokeWidth={2.2} />
+          </span>
+          <span style={{ flex: 1 }}>
+            <span style={{ ...S.settingName, display: 'block' }}>
+              {t.reportIssueTitle}
+            </span>
+            <span style={{ ...S.settingHint, display: 'block' }}>
+              {t.reportIssueHint}
+            </span>
+          </span>
+          <ChevronRight size={18} color={C.faint} />
+        </button>
+      )}
+    </div>
   )
 }
 
-function groupByDate(collections) {
+export function groupByDate(collections) {
   if (!collections) return []
   const map = new Map()
   for (const c of collections) {
