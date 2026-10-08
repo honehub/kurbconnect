@@ -3,7 +3,10 @@ import {
   Trash2, Phone, Mail, Globe, ExternalLink, Clock, Bell, BellOff,
   CalendarDays, Building2, FileText, ShieldCheck, ChevronRight,
 } from 'lucide-react'
-import { loadPreferences, savePreferences, getDeviceToken, deactivateDevice } from './push'
+import {
+  loadPreferences, savePreferences, getDeviceToken, deactivateDevice,
+  isNativeApp, getNotificationPermission, requestNotificationPermission, openAppSettings,
+} from './push'
 import { S, C, catColor } from './styles'
 import ServiceIcon from './ServiceIcon'
 import { useLang } from './i18n'
@@ -31,7 +34,24 @@ export default function SettingsView({ accent, org }) {
   const [saved, setSaved] = useState(false)
   const [confirmStop, setConfirmStop] = useState(false)
   const [stopped, setStopped] = useState(false)
+  const [perm, setPerm] = useState(null)
   const hasDevice = !!getDeviceToken()
+  const native = isNativeApp()
+
+  useEffect(() => {
+    getNotificationPermission().then(setPerm)
+  }, [])
+
+  async function askForNotifications() {
+    setPerm(await requestNotificationPermission())
+  }
+
+  // Everything below depends on a push token. On the web there isn't one, so
+  // the controls would accept input and silently fail to save.
+  const pushOff = !native
+  const dim = pushOff
+    ? { opacity: 0.45, pointerEvents: 'none', filter: 'saturate(0.4)' }
+    : null
 
   const CATEGORIES = [
     { id: 'trash', label: t.trash },
@@ -112,7 +132,31 @@ export default function SettingsView({ accent, org }) {
 
   return (
     <div>
-      {!hasDevice && <div style={{ ...S.notice, marginTop: 12 }}>{t.openOnPhone}</div>}
+      {pushOff && <div style={{ ...S.notice, marginTop: 12 }}>{t.openOnPhone}</div>}
+
+      {native && perm && perm !== 'granted' && (
+        <div style={{ ...S.warnCard, margin: '12px 14px 0' }}>
+          <BellOff size={19} color={C.holidayInk} strokeWidth={2.2} style={{ flexShrink: 0 }} />
+          <span style={{ flex: 1 }}>
+            <span style={{ ...S.warnTitle, display: 'block' }}>{t.notifsOffTitle}</span>
+            <span style={{ ...S.warnBody, display: 'block' }}>
+              {perm === 'denied' ? t.notifsBlockedBody : t.notifsOffBody}
+            </span>
+            {(
+              <button
+                onClick={perm === 'denied' ? openAppSettings : askForNotifications}
+                style={{
+                  marginTop: 9, padding: '9px 14px', borderRadius: 10, border: 'none',
+                  background: C.brand, color: '#FFFFFF', fontFamily: 'inherit',
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                {perm === 'denied' ? t.openSettings : t.turnOnNotifs}
+              </button>
+            )}
+          </span>
+        </div>
+      )}
 
       {isPaused && (
         <div style={pausedBar}>
@@ -134,7 +178,8 @@ export default function SettingsView({ accent, org }) {
         </div>
       )}
 
-      {/* ── Pickup reminders ─────────────────────────── */}
+      {/* ── Everything push-dependent ────────────────── */}
+      <div style={dim} aria-disabled={pushOff || undefined}>
       <div style={S.groupHead}>{t.pickupReminders}</div>
       <div style={S.card}>
         <div style={{ ...(prefs.reminders_enabled ? S.setRow : S.setRowLast), gap: 16 }}>
@@ -275,6 +320,8 @@ export default function SettingsView({ accent, org }) {
           />
           <ChevronRight size={18} color={C.faint} />
         </label>
+      </div>
+
       </div>
 
       {/* ── Language ─────────────────────────────────── */}

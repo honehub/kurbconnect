@@ -253,7 +253,7 @@ export default function App() {
   }
 
   return (
-    <div style={S.page}>
+    <div style={S.page} data-page>
       <div style={S.shell}>
         <ProviderHeader
           org={org}
@@ -264,6 +264,7 @@ export default function App() {
           backLabel={tab === 'more' ? t.navMore : t.navHome}
         />
 
+        <div style={S.contentSheet}>
         {sub === 'settings' && <SettingsView accent={accent} org={org} />}
         {sub === 'guidelines' && <GuidelinesView org={org} />}
         {sub === 'report' && (
@@ -308,6 +309,7 @@ export default function App() {
         )}
 
         {!sub && tab === 'more' && <MoreView onOpen={setSub} accent={accent} />}
+        </div>
       </div>
 
       <BottomNav tab={tab} setTab={changeTab} accent={accent} alertCount={unread} />

@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core'
+import { NativeSettings, AndroidSettings, IOSSettings } from 'capacitor-native-settings'
 import { PushNotifications } from '@capacitor/push-notifications'
 import { supabase, getOrgId } from './supabase'
 
@@ -95,4 +96,49 @@ export async function deactivateDevice() {
     deviceToken = null
   }
   return !error
+}
+export function isNativeApp() {
+  return Capacitor.isNativePlatform()
+}
+
+// 'unsupported' on the web; otherwise 'granted' | 'denied' | 'prompt'.
+export async function getNotificationPermission() {
+  if (!Capacitor.isNativePlatform()) return 'unsupported'
+  try {
+    const p = await PushNotifications.checkPermissions()
+    return p.receive
+  } catch {
+    return 'unsupported'
+  }
+}
+
+// iOS shows its permission prompt once, ever. If the resident already said no,
+// this resolves 'denied' without showing anything, and the only way back is the
+// system Settings app — so the caller must handle 'denied' with instructions
+// rather than by asking again.
+export async function requestNotificationPermission() {
+  if (!Capacitor.isNativePlatform()) return 'unsupported'
+  try {
+    const p = await PushNotifications.requestPermissions()
+    if (p.receive === 'granted') await PushNotifications.register()
+    return p.receive
+  } catch {
+    return 'denied'
+  }
+}
+
+// Opens this app's own page in the system Settings app. Needed because once a
+// resident has denied notifications, neither iOS nor Android will show the
+// permission prompt again — Settings is the only way back.
+export async function openAppSettings() {
+  if (!Capacitor.isNativePlatform()) return false
+  try {
+    await NativeSettings.open({
+      optionAndroid: AndroidSettings.ApplicationDetails,
+      optionIOS: IOSSettings.App,
+    })
+    return true
+  } catch {
+    return false
+  }
 }

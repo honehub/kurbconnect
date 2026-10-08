@@ -28,7 +28,7 @@ export const C = {
   body: '#334155',
   muted: '#64748B',
   faint: '#94A3B8',
-  rule: '#E6EAF0',
+  rule: '#EDF1F7',
   tint: '#EAF6FE',       // hero date block
   tintSoft: '#EFF7FE',   // later date blocks
   reminderBg: '#D3ECFD',
@@ -37,7 +37,7 @@ export const C = {
   holidaySoft: '#FEEDCA',// holiday date block on the cards
   holidayWarn: '#FEF1D8',// schedule-change note
   holidayInk: '#92400E',
-  ruleSoft: '#F1F5F9',
+  ruleSoft: '#F4F7FB',
   paper: '#FFFFFF',
   alert: '#B45309',
   alertBg: '#FFFBEB',
@@ -62,7 +62,7 @@ export const S = {
     background: '#FFFFFF',
     fontFamily: font,
     color: C.body,
-    paddingBottom: 'calc(88px + env(safe-area-inset-bottom))',
+    paddingBottom: 'calc(68px + env(safe-area-inset-bottom))',
     WebkitFontSmoothing: 'antialiased',
   },
   shell: {
@@ -283,7 +283,7 @@ export const S = {
   // ---- Branded header ----
   headWrap: {
     // Runs under the status bar / notch; the inset keeps content clear of it.
-    padding: '10px 20px 12px',
+    padding: '10px 20px 30px',
     paddingTop: 'calc(10px + env(safe-area-inset-top))',
     color: '#FFFFFF',
   },
@@ -318,11 +318,11 @@ export const S = {
 
   // ---- Day cards ----
   dayCard: {
-    margin: '0 14px 8px', background: C.paper,
+    margin: '0 14px 6px', background: C.paper,
     border: `1px solid ${C.rule}`, borderRadius: 18, overflow: 'hidden',
     boxShadow: '0 1px 2px rgba(2, 20, 60, 0.05)',
   },
-  dayCardTop: { display: 'flex', gap: 11, padding: 10 },
+  dayCardTop: { display: 'flex', gap: 11, padding: 9 },
   dateBlock: { width: 62, flexShrink: 0, borderRadius: 11, padding: '6px 0 6px', textAlign: 'center', alignSelf: 'flex-start' },
   dateBlockDow: { fontSize: 12.5, fontWeight: 700, lineHeight: 1.1, letterSpacing: '0.03em', color: C.brand },
   dateBlockNum: { fontSize: 42, fontWeight: 700, lineHeight: 0.98, letterSpacing: '-0.04em', color: C.ink, margin: '2px 0 3px' },
@@ -340,7 +340,7 @@ export const S = {
   },
   svcRow: {
     display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px',
-    borderRadius: 8, marginTop: 4, minHeight: 26,
+    borderRadius: 8, marginTop: 4, minHeight: 24,
     background: C.paper, border: `1px solid ${C.rule}`,
   },
   svcIconTile: { width: 22, height: 22, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
@@ -370,7 +370,7 @@ export const S = {
   },
   agendaHead: {
     fontSize: 22, fontWeight: 700, color: C.ink, letterSpacing: '-0.03em',
-    textAlign: 'left', padding: '10px 16px 6px',
+    textAlign: 'left', padding: '5px 16px 5px',
   },
   card: {
     margin: '0 14px', background: C.paper, border: `1px solid ${C.rule}`,
@@ -430,6 +430,14 @@ export const S = {
     padding: 0, margin: 0, font: 'inherit', textAlign: 'left', cursor: 'pointer',
   },
   listHead: { fontSize: 13.5, fontWeight: 700, color: C.ink, letterSpacing: '0.025em' },
+
+  // The white content area tucks under the navy with rounded top corners.
+  contentSheet: {
+    position: 'relative',
+    marginTop: -20,
+    background: C.paper,
+    borderRadius: '22px 22px 0 0',
+  },
 
   // ---- Month calendar ----
   monthGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, padding: '0 8px 10px' },
