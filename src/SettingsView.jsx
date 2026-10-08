@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import {
-  Trash2, Phone, Mail, Globe, ExternalLink, Clock, Bell, BellOff,
+  Trash2, Phone, Mail, Globe, ExternalLink, Clock, Bell, BellOff, Smartphone,
   CalendarDays, Building2, FileText, ShieldCheck, ChevronRight,
 } from 'lucide-react'
 import {
@@ -28,7 +28,9 @@ function timeLabel(v, locale) {
   return d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
 }
 
-export default function SettingsView({ accent, org }) {
+// One component, two screens: 'reminders' holds everything that needs a push
+// token, 'general' the rest. They share all the preference state.
+export default function SettingsView({ accent, org, section = 'reminders' }) {
   const { t, lang, locale, setLang } = useLang()
   const [prefs, setPrefs] = useState(null)
   const [saved, setSaved] = useState(false)
@@ -48,6 +50,7 @@ export default function SettingsView({ accent, org }) {
 
   // Everything below depends on a push token. On the web there isn't one, so
   // the controls would accept input and silently fail to save.
+  const reminders = section === 'reminders'
   const pushOff = !native
   const dim = pushOff
     ? { opacity: 0.45, pointerEvents: 'none', filter: 'saturate(0.4)' }
@@ -132,9 +135,19 @@ export default function SettingsView({ accent, org }) {
 
   return (
     <div>
-      {pushOff && <div style={{ ...S.notice, marginTop: 12 }}>{t.openOnPhone}</div>}
+      {reminders && pushOff && (
+        <div style={S.infoCard}>
+          <span style={S.infoIcon}>
+            <Smartphone size={20} color={C.brand} strokeWidth={2} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ ...S.infoTitle, display: 'block' }}>{t.openOnPhoneTitle}</span>
+            <span style={{ ...S.infoBody, display: 'block' }}>{t.openOnPhone}</span>
+          </span>
+        </div>
+      )}
 
-      {native && perm && perm !== 'granted' && (
+      {reminders && native && perm && perm !== 'granted' && (
         <div style={{ ...S.warnCard, margin: '12px 14px 0' }}>
           <BellOff size={19} color={C.holidayInk} strokeWidth={2.2} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}>
@@ -178,7 +191,7 @@ export default function SettingsView({ accent, org }) {
         </div>
       )}
 
-      {/* ── Everything push-dependent ────────────────── */}
+      {reminders && (
       <div style={dim} aria-disabled={pushOff || undefined}>
       <div style={S.groupHead}>{t.pickupReminders}</div>
       <div style={S.card}>
@@ -275,7 +288,12 @@ export default function SettingsView({ accent, org }) {
         </>
       )}
 
-      {/* ── Service alerts ───────────────────────────── */}
+      </div>
+      )}
+
+      {/* ── Service alerts (reminders screen) ─────────── */}
+      {reminders && (
+      <div style={dim} aria-disabled={pushOff || undefined}>
       <div style={S.groupHead}>{t.serviceAlerts}</div>
       <div style={S.card}>
         <div style={{ ...S.setRowLast, gap: 13 }}>
@@ -294,7 +312,12 @@ export default function SettingsView({ accent, org }) {
         </div>
       </div>
 
-      {/* ── Pause ────────────────────────────────────── */}
+      </div>
+      )}
+
+      {/* ── Pause (reminders screen) ─────────────────── */}
+      {reminders && (
+      <div style={dim} aria-disabled={pushOff || undefined}>
       <div style={S.groupHead}>{t.pauseReminders}</div>
       <div style={S.card}>
         <div style={{ ...S.setRow, gap: 13, alignItems: 'flex-start' }}>
@@ -323,8 +346,10 @@ export default function SettingsView({ accent, org }) {
       </div>
 
       </div>
+      )}
 
       {/* ── Language ─────────────────────────────────── */}
+      {!reminders && (<>
       <div style={S.groupHead}>{t.language}</div>
       <div style={S.card}>
         <div style={{ ...S.setRowLast, gap: 13 }}>
@@ -384,8 +409,10 @@ export default function SettingsView({ accent, org }) {
         />
       </div>
 
-      {/* ── Stop ─────────────────────────────────────── */}
-      {confirmStop ? (
+      </>)}
+
+      {/* ── Stop (general screen) ────────────────────── */}
+      {!reminders && (confirmStop ? (
         <div style={{ padding: '20px 14px 10px' }}>
           <div style={{ ...S.notice, margin: '0 0 12px' }}>{t.stopConfirm}</div>
           <button
@@ -404,7 +431,7 @@ export default function SettingsView({ accent, org }) {
           <span style={S.dangerText}>{t.stopEverything}</span>
           <ChevronRight size={18} color="#DC2626" />
         </button>
-      )}
+      ))}
 
       {saved && (
         <div style={{ ...S.muted, textAlign: 'center', color: C.faint, padding: '14px 0 4px' }}>

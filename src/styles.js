@@ -31,6 +31,7 @@ export const C = {
   rule: '#EDF1F7',
   tint: '#EAF6FE',       // hero date block
   tintSoft: '#EFF7FE',   // later date blocks
+  heroBg: '#F1F8FE',     // hero card body
   reminderBg: '#D3ECFD',
   cell: '#EEF5FC',       // calendar day cell
   holiday: '#FEE1A3',    // holiday day cell
@@ -283,7 +284,7 @@ export const S = {
   // ---- Branded header ----
   headWrap: {
     // Runs under the status bar / notch; the inset keeps content clear of it.
-    padding: '10px 20px 30px',
+    padding: '10px 20px 36px',
     paddingTop: 'calc(10px + env(safe-area-inset-top))',
     color: '#FFFFFF',
   },
@@ -299,6 +300,15 @@ export const S = {
     backgroundRepeat: 'no-repeat',
   },
   headLogoRow: { display: 'flex', justifyContent: 'center' },
+  // Before an address is set there is no provider logo, and the full-colour
+  // KurbConnect PNG has navy lettering that vanishes on the navy header. This
+  // is the same lockup drawn light, so it reads on the banner.
+  headWordLockup: { display: 'flex', alignItems: 'center', gap: 8 },
+  headWordMark: {
+    borderRadius: 9, border: '2px solid #FFFFFF', boxSizing: 'border-box',
+    background: '#0B1E3F', objectFit: 'cover', display: 'block', flexShrink: 0,
+  },
+  headWordText: { fontWeight: 800, letterSpacing: '-0.03em', color: '#FFFFFF', lineHeight: 1 },
   headLogo: { height: 52, maxWidth: 250, objectFit: 'contain', display: 'block' },
   headLockup: {
     display: 'block', margin: '5px auto 0', height: 'auto',
@@ -314,7 +324,91 @@ export const S = {
     color: 'rgba(255,255,255,0.92)', cursor: 'pointer',
   },
   headAddressText: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '72%' },
-  headTitle: { margin: '4px 0 0', fontSize: 31, lineHeight: 1.1, fontWeight: 700, letterSpacing: '-0.035em', color: '#FFFFFF' },
+  headTitle: { margin: '4px 0 0', fontSize: 28, lineHeight: 1.28, fontWeight: 700, letterSpacing: '-0.035em', color: '#FFFFFF' },
+
+  // ---- Splash / welcome (full-screen brand) ----
+  brandScreen: {
+    position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden',
+    background: C.navy, fontFamily: font, color: '#FFFFFF',
+    display: 'flex', flexDirection: 'column',
+  },
+  // The art is a 1200x800 landscape; stretched over a portrait phone the arcs
+  // swallow the screen, so it is sized to the viewport width and parked in the
+  // bottom-right corner. Its own navy is lighter than C.navy, so the top edge
+  // would draw a seam across the screen — the mask fades that edge out. Sizing
+  // the element to the artwork (rather than the screen) keeps that fade on the
+  // edge whatever the screen's shape.
+  brandArt: {
+    position: 'absolute', right: 0, bottom: 0, pointerEvents: 'none',
+    width: 'min(165%, 760px)', aspectRatio: '1200 / 800',
+    backgroundImage: "url('/header-bg.webp')",
+    backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat',
+    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 16%)',
+    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 16%)',
+  },
+  brandInner: {
+    position: 'relative', flex: 1, boxSizing: 'border-box',
+    width: '100%', maxWidth: 480, margin: '0 auto',
+    display: 'flex', flexDirection: 'column',
+    padding: '0 28px',
+    paddingTop: 'calc(24px + env(safe-area-inset-top))',
+    paddingBottom: 'calc(26px + env(safe-area-inset-bottom))',
+  },
+  brandCenter: {
+    flex: 1, display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+  },
+  // The mark is itself a navy rounded tile, so the frame supplies the white
+  // outline and clips the artwork's own corners to the same radius.
+  brandMarkFrame: {
+    display: 'flex', width: 104, height: 104, borderRadius: 26,
+    border: '3px solid #FFFFFF', boxSizing: 'border-box',
+    background: '#0B1E3F', overflow: 'hidden', flexShrink: 0,
+    boxShadow: '0 0 30px rgba(4, 97, 254, 0.45)',
+  },
+  brandMarkImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
+  brandWord: {
+    marginTop: 18, fontSize: 38, fontWeight: 800,
+    letterSpacing: '-0.035em', lineHeight: 1.05, color: '#FFFFFF',
+  },
+  brandWordAccent: { color: '#2B7BFF' },
+  brandHeadline: {
+    margin: '34px 0 0', fontSize: 30, fontWeight: 800,
+    letterSpacing: '-0.035em', lineHeight: 1.2, color: '#FFFFFF',
+    whiteSpace: 'pre-line',
+  },
+  brandSub: {
+    margin: '12px 0 0', fontSize: 16, fontWeight: 500,
+    lineHeight: 1.45, color: 'rgba(255, 255, 255, 0.78)',
+  },
+  brandCta: {
+    display: 'flex', alignItems: 'center', gap: 6, width: '100%',
+    padding: '17px 20px', borderRadius: 999, border: 'none',
+    background: C.brand, color: '#FFFFFF', fontFamily: 'inherit',
+    fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em',
+    cursor: 'pointer', boxSizing: 'border-box',
+    boxShadow: '0 10px 26px rgba(4, 97, 254, 0.42)',
+  },
+  brandCtaHint: {
+    marginTop: 14, textAlign: 'center', fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.62)',
+  },
+  brandProviderLogo: { maxWidth: 250, maxHeight: 160, objectFit: 'contain', display: 'block' },
+  brandLockup: { display: 'block', width: 196, height: 'auto', margin: '20px auto 0' },
+
+  // ---- Info card (an explanation, not a warning) ----
+  infoCard: {
+    display: 'flex', gap: 12, alignItems: 'flex-start',
+    margin: '14px 14px 0', padding: '13px 14px',
+    background: C.tintSoft, border: `1px solid ${C.tint}`, borderRadius: 16,
+  },
+  infoIcon: {
+    width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: C.paper,
+  },
+  infoTitle: { fontSize: 15.5, fontWeight: 700, color: C.ink, letterSpacing: '-0.01em' },
+  infoBody: { fontSize: 13.5, color: C.muted, lineHeight: 1.45, marginTop: 2 },
 
   // ---- Day cards ----
   dayCard: {
@@ -366,7 +460,7 @@ export const S = {
   // ---- Restyle overrides (later keys win) ----
   groupHead: {
     fontSize: 22, fontWeight: 700, color: C.ink, letterSpacing: '-0.03em',
-    textAlign: 'left', padding: '18px 16px 8px',
+    textAlign: 'left', padding: '13px 16px 6px',
   },
   agendaHead: {
     fontSize: 22, fontWeight: 700, color: C.ink, letterSpacing: '-0.03em',
@@ -382,13 +476,13 @@ export const S = {
   // ---- Settings rows ----
   setRow: {
     display: 'flex', alignItems: 'center', gap: 13, width: '100%',
-    padding: '13px 15px', textAlign: 'left', background: 'none',
+    padding: '10px 14px', textAlign: 'left', background: 'none',
     border: 'none', borderBottom: `1px solid ${C.ruleSoft}`,
     font: 'inherit', textDecoration: 'none', boxSizing: 'border-box',
   },
   setRowLast: {
     display: 'flex', alignItems: 'center', gap: 13, width: '100%',
-    padding: '13px 15px', textAlign: 'left', background: 'none',
+    padding: '10px 14px', textAlign: 'left', background: 'none',
     border: 'none', font: 'inherit', textDecoration: 'none', boxSizing: 'border-box',
   },
   iconTile: {
@@ -441,6 +535,21 @@ export const S = {
     // of this box and drags the panel down instead of the child, so the first
     // card lands on the rounded edge.
     display: 'flow-root',
+  },
+
+  // Report bar: fixed above the tab bar so the schedule scrolls behind it.
+  reportDock: {
+    position: 'fixed',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '100%',
+    maxWidth: 480,
+    bottom: 'calc(58px + env(safe-area-inset-bottom))',
+    zIndex: 45,
+    padding: '10px 14px 12px',
+    background: C.paper,
+    boxShadow: '0 -10px 22px rgba(2, 20, 60, 0.10)',
+    boxSizing: 'border-box',
   },
 
   // ---- Month calendar ----

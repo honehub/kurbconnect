@@ -16,10 +16,22 @@ import SettingsView from './SettingsView'
 import AlertsView from './AlertsView'
 import ReportView from './ReportView'
 import MoreView from './MoreView'
+import SplashView from './SplashView'
+import WelcomeView from './WelcomeView'
 import GuidelinesView from './GuidelinesView'
 import ProviderHeader from './ProviderHeader'
 import { S, C, parseDate } from './styles'
 import { useLang } from './i18n'
+
+// The provider we launched into last time. Cached so the branded splash can
+// paint immediately instead of waiting on the network.
+function readLastProvider() {
+  try {
+    return JSON.parse(localStorage.getItem('lastProvider') || 'null')
+  } catch {
+    return null
+  }
+}
 
 // '07:00:00' -> '7:00 AM'
 function clockLabel(time, locale) {
@@ -58,15 +70,29 @@ export default function App() {
     const saved = localStorage.getItem('pinned')
     return saved ? JSON.parse(saved) : null
   })
+  // 'splash' while the saved address resolves, 'welcome' when there isn't one.
+  const [phase, setPhase] = useState('splash')
+  const [splashOrg, setSplashOrg] = useState(readLastProvider)
 
   const accent = '#0078FE'
 
   useEffect(() => {
+    // Hold the splash briefly even on a fast load, so it reads as a launch
+    // screen rather than a flash of navy.
+    const started = Date.now()
+    const done = (next) =>
+      setTimeout(() => setPhase(next), Math.max(0, 1100 - (Date.now() - started)))
+
     if (pinned) {
       setBusy(true)
-      loadSchedule(pinned.lat, pinned.lng).finally(() => setBusy(false))
+      loadSchedule(pinned.lat, pinned.lng).finally(() => {
+        setBusy(false)
+        done('app')
+      })
     } else if (address) {
-      lookup()
+      lookup().finally(() => done('app'))
+    } else {
+      done('welcome')
     }
   }, [])
 
@@ -189,6 +215,9 @@ export default function App() {
       return false
     }
     setOrg(found)
+    const brand = { name: found.organization_name || '', logo: found.logo_url || '' }
+    setSplashOrg(brand)
+    localStorage.setItem('lastProvider', JSON.stringify(brand))
 
     const data = await getSchedule(lat, lng, 60)
     if (!data || data.length === 0) {
@@ -247,9 +276,24 @@ export default function App() {
     more: t.navMore,
   }
   const SUB_TITLES = {
+    reminders: t.remindersTitle,
     settings: t.settingsTitle,
     guidelines: t.guidelinesTitle,
     report: t.reportIssueTitle,
+  }
+
+  if (phase === 'splash') return <SplashView provider={splashOrg} />
+  if (phase === 'welcome') {
+    return (
+      <WelcomeView
+        onStart={() => {
+          setPhase('app')
+          setTab('home')
+          setSub(null)
+          setEditing(true)
+        }}
+      />
+    )
   }
 
   return (
@@ -265,7 +309,12 @@ export default function App() {
         />
 
         <div style={S.contentSheet}>
-        {sub === 'settings' && <SettingsView accent={accent} org={org} />}
+        {sub === 'reminders' && (
+          <SettingsView accent={accent} org={org} section="reminders" />
+        )}
+        {sub === 'settings' && (
+          <SettingsView accent={accent} org={org} section="general" />
+        )}
         {sub === 'guidelines' && <GuidelinesView org={org} />}
         {sub === 'report' && (
           <ReportView coords={coords} address={address} accent={accent} />
@@ -290,7 +339,7 @@ export default function App() {
             onReport={() => setSub('report')}
             setoutTime={setoutTime}
             reminder={reminder}
-            onReminder={() => setSub('settings')}
+            onReminder={() => setSub('reminders')}
             onGuidelines={() => setSub('guidelines')}
           />
         )}

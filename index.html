@@ -17,7 +17,17 @@
     <title>KurbConnect</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Painted before the bundle parses, so launch is never a white flash.
+           React clears #root on mount and this goes with it. -->
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          background: #012158 url('/header-bg.webp') right bottom / cover no-repeat;
+        "
+      ></div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

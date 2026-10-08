@@ -1,4 +1,4 @@
-import { Settings, Recycle, FileText, AlertCircle, ChevronRight } from 'lucide-react'
+import { Settings, Bell, Recycle, FileText, AlertCircle, ChevronRight } from 'lucide-react'
 import { S, C } from './styles'
 import { useLang } from './i18n'
 
@@ -7,6 +7,7 @@ import { useLang } from './i18n'
 const TERMS_URL = 'https://honeaenterprises.com/kurbconnect/terms-of-service/'
 
 const TINT = {
+  reminders:  '#EFF6FF',
   settings:   '#EEF2FF',
   guidelines: '#ECFDF5',
   report:     '#FEF2F2',
@@ -41,11 +42,18 @@ export default function MoreView({ onOpen, accent }) {
 
   const items = [
     {
+      key: 'reminders',
+      Icon: Bell,
+      color: '#0461FE',
+      title: t.remindersTitle,
+      hint: t.remindersHint,
+    },
+    {
       key: 'settings',
       Icon: Settings,
       color: '#4F46E5',
       title: t.settingsTitle,
-      hint: t.settingsHint,
+      hint: t.settingsHintGeneral,
     },
     {
       key: 'guidelines',

@@ -43,11 +43,20 @@ export default function ProviderHeader({
       style={{ ...S.headLogo, height: compact ? 44 : 62 }}
     />
   ) : (
-    <img
-      src="/kurbconnect-logo.png"
-      alt="KurbConnect"
-      style={{ ...S.headLogo, height: compact ? 30 : 40 }}
-    />
+    <span style={S.headWordLockup} aria-label="KurbConnect">
+      <img
+        src="/kurbconnect-mark.png"
+        alt=""
+        style={{
+          ...S.headWordMark,
+          width: compact ? 28 : 36,
+          height: compact ? 28 : 36,
+        }}
+      />
+      <span style={{ ...S.headWordText, fontSize: compact ? 20 : 25 }}>
+        Kurb<span style={S.brandWordAccent}>Connect</span>
+      </span>
+    </span>
   )
 
   return (
@@ -95,7 +104,7 @@ export default function ProviderHeader({
         <h1
           style={{
             ...S.headTitle,
-            fontSize: compact ? 27 : 31,
+            fontSize: compact ? 26 : 28,
             position: 'relative',
           }}
         >

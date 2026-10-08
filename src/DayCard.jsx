@@ -100,7 +100,7 @@ export default function DayCard({
   }
 
   return (
-    <div style={S.dayCard}>
+    <div style={lead ? { ...S.dayCard, background: C.heroBg } : S.dayCard}>
       <div style={S.dayCardTop}>
         <div
           style={{ ...S.dateBlock, background: lead ? C.tint : C.tintSoft }}
