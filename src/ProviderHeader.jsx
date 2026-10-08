@@ -64,7 +64,8 @@ export default function ProviderHeader({
       style={{
         ...S.headWrap,
         background: C.navy,
-        paddingBottom: compact ? 16 : 20,
+        // contentSheet pulls up 20px, so these are 20 larger than the gap.
+        paddingBottom: compact ? 30 : 34,
         position: 'relative',
         overflow: 'hidden',
       }}

@@ -20,7 +20,9 @@ export default function AlertsView({ alerts, loading, unreadIds }) {
   return (
     // No section heading: the screen title already says Messages, and the
     // old "Service alerts" label contradicted both the tab and the title.
-    <div style={{ paddingTop: 10 }}>
+    // The rows are full-bleed white, so they start below the sheet's 22px
+    // corner radius — otherwise they square off its rounded top.
+    <div style={{ paddingTop: 24 }}>
       {alerts.map((a) => {
         const cat = CATS[a.category] || CATS.notice
         const title = lang === 'es' && a.title_es ? a.title_es : a.title

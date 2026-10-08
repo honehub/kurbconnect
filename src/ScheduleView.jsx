@@ -1,5 +1,5 @@
 import PinMap, { SAN_ANGELO } from './PinMap'
-import { AlertCircle, ChevronRight } from 'lucide-react'
+import { AlertCircle, ChevronRight, LocateFixed } from 'lucide-react'
 import { S, C, daysUntil } from './styles'
 import { useLang } from './i18n'
 import AddressInput from './AddressInput'
@@ -8,7 +8,7 @@ import DayCard from './DayCard'
 export default function ScheduleView({
   address, setAddress, collections, status, busy, accent,
   showMap, onLookup, onSelectAddress, onUsePin, pinned, onCancelMap, editing, setEditing,
-  onReport, setoutTime, reminder, onReminder, onGuidelines,
+  onReport, setoutTime, reminder, onReminder, onGuidelines, onUseLocation,
 }) {
   const { t } = useLang()
 
@@ -43,6 +43,12 @@ export default function ScheduleView({
           >
             {busy ? t.lookingUp : t.findSchedule}
           </button>
+          {onUseLocation && (
+            <button onClick={onUseLocation} disabled={busy} style={S.locBtn}>
+              <LocateFixed size={18} strokeWidth={2} />
+              {busy ? t.locating : t.useMyLocation}
+            </button>
+          )}
           {hasSchedule && (
             <button onClick={() => setEditing(false)} style={S.buttonQuiet}>
               {t.cancel}

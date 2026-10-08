@@ -134,7 +134,7 @@ export default function SettingsView({ accent, org, section = 'reminders' }) {
   const showMorning = prefs.reminder_timing === 'day_of' || prefs.reminder_timing === 'both'
 
   return (
-    <div>
+    <div style={{ paddingTop: 8 }}>
       {reminders && pushOff && (
         <div style={S.infoCard}>
           <span style={S.infoIcon}>

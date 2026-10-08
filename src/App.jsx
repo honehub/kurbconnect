@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   geocodeAddress,
   reverseGeocode,
@@ -22,6 +22,17 @@ import GuidelinesView from './GuidelinesView'
 import ProviderHeader from './ProviderHeader'
 import { S, C, parseDate } from './styles'
 import { useLang } from './i18n'
+
+// The point the saved address resolved to. Re-geocoding the stored label on
+// every launch was losing the address whenever the geocoder missed it, so the
+// coordinates are kept and the schedule loads straight from them.
+function readCoords() {
+  try {
+    return JSON.parse(localStorage.getItem('coords') || 'null')
+  } catch {
+    return null
+  }
+}
 
 // The provider we launched into last time. Cached so the branded splash can
 // paint immediately instead of waiting on the network.
@@ -72,6 +83,7 @@ export default function App() {
   })
   // 'splash' while the saved address resolves, 'welcome' when there isn't one.
   const [phase, setPhase] = useState('splash')
+  const swipe = useRef(null)
   const [splashOrg, setSplashOrg] = useState(readLastProvider)
 
   const accent = '#0078FE'
@@ -81,9 +93,16 @@ export default function App() {
     // screen rather than a flash of navy.
     const started = Date.now()
     const done = (next) =>
-      setTimeout(() => setPhase(next), Math.max(0, 1100 - (Date.now() - started)))
+      setTimeout(() => setPhase(next), Math.max(0, 2000 - (Date.now() - started)))
 
-    if (pinned) {
+    const saved = readCoords()
+    if (saved) {
+      setBusy(true)
+      loadSchedule(saved.lat, saved.lng).finally(() => {
+        setBusy(false)
+        done('app')
+      })
+    } else if (pinned) {
       setBusy(true)
       loadSchedule(pinned.lat, pinned.lng).finally(() => {
         setBusy(false)
@@ -202,6 +221,26 @@ export default function App() {
     }
   }
 
+  // The device's own position, handed to the same path as a dropped pin: it
+  // resolves the provider and reverse-geocodes the nearest street address.
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setStatus(t.locationDenied)
+      return
+    }
+    setBusy(true)
+    setStatus(null)
+    setShowMap(false)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => usePin({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {
+        setBusy(false)
+        setStatus(t.locationDenied)
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
+    )
+  }
+
   async function loadSchedule(lat, lng) {
     // Who serves this point? Nothing is assumed until this resolves.
     const found = await findOrganization(lat, lng)
@@ -229,6 +268,7 @@ export default function App() {
     setCollections(data)
     setStatus(null)
     setCoords({ lat, lng })
+    localStorage.setItem('coords', JSON.stringify({ lat, lng }))
     registerForPush(lat, lng).catch(() => {})
 
     // Set-out time, branding and contact details for this route.
@@ -296,8 +336,26 @@ export default function App() {
     )
   }
 
+  // Swipe right to leave a pushed screen, matching the iOS back gesture. The
+  // map pans horizontally, so a swipe starting inside it is left alone.
+  function onTouchStart(e) {
+    if (e.touches.length !== 1 || e.target.closest?.('.leaflet-container')) {
+      swipe.current = null
+      return
+    }
+    swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+
+  function onTouchEnd(e) {
+    const from = swipe.current
+    swipe.current = null
+    if (!from || !sub) return
+    const to = e.changedTouches[0]
+    if (to.clientX - from.x > 70 && Math.abs(to.clientY - from.y) < 50) setSub(null)
+  }
+
   return (
-    <div style={S.page} data-page>
+    <div style={S.page} data-page onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <div style={S.shell}>
         <ProviderHeader
           org={org}
@@ -341,6 +399,7 @@ export default function App() {
             reminder={reminder}
             onReminder={() => setSub('reminders')}
             onGuidelines={() => setSub('guidelines')}
+            onUseLocation={useMyLocation}
           />
         )}
 

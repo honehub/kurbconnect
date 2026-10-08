@@ -31,7 +31,7 @@ export const C = {
   rule: '#EDF1F7',
   tint: '#EAF6FE',       // hero date block
   tintSoft: '#EFF7FE',   // later date blocks
-  heroBg: '#F1F8FE',     // hero card body
+  heroBg: '#E4EFFC',     // hero card body
   reminderBg: '#D3ECFD',
   cell: '#EEF5FC',       // calendar day cell
   holiday: '#FEE1A3',    // holiday day cell
@@ -233,6 +233,14 @@ export const S = {
     borderRadius: 6,
     boxSizing: 'border-box',
     outline: 'none',
+  },
+  locBtn: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+    width: '100%', marginTop: 10, padding: '12px',
+    fontSize: 15, fontWeight: 600, fontFamily: font,
+    color: C.brand, background: C.paper,
+    border: `1px solid ${C.tint}`, borderRadius: 6,
+    cursor: 'pointer', letterSpacing: '-0.01em',
   },
   button: {
     width: '100%',
