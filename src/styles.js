@@ -437,6 +437,10 @@ export const S = {
     marginTop: -20,
     background: C.paper,
     borderRadius: '22px 22px 0 0',
+    // flow-root, not padding: without it a child's top margin collapses out
+    // of this box and drags the panel down instead of the child, so the first
+    // card lands on the rounded edge.
+    display: 'flow-root',
   },
 
   // ---- Month calendar ----

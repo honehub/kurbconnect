@@ -18,8 +18,9 @@ export default function AlertsView({ alerts, loading, unreadIds }) {
   }
 
   return (
-    <>
-      <div style={S.agendaHead}>{t.alertsTitle}</div>
+    // No section heading: the screen title already says Messages, and the
+    // old "Service alerts" label contradicted both the tab and the title.
+    <div style={{ paddingTop: 10 }}>
       {alerts.map((a) => {
         const cat = CATS[a.category] || CATS.notice
         const title = lang === 'es' && a.title_es ? a.title_es : a.title
@@ -42,7 +43,7 @@ export default function AlertsView({ alerts, loading, unreadIds }) {
           </article>
         )
       })}
-    </>
+    </div>
   )
 }
 

@@ -12,17 +12,22 @@ const iso = (d) =>
 
 const ORDER = { trash: 0, recycling: 1, bulk: 2, yard_waste: 3 }
 
-// A month as a 7-column grid, aligned to Sunday, padded to whole weeks.
+// A month as a 7-column grid, aligned to Sunday and padded only as far as the
+// week containing the last day. A fixed 42 cells would leave a blank row below
+// most months.
 function monthCells(year, month) {
   const first = new Date(year, month, 1)
   const start = new Date(first)
   start.setDate(1 - first.getDay())
+
+  const last = new Date(year, month + 1, 0)
+  const end = new Date(last)
+  end.setDate(last.getDate() + (6 - last.getDay()))
+
   const cells = []
-  for (let i = 0; i < 42; i++) {
-    const d = new Date(start)
-    d.setDate(start.getDate() + i)
-    cells.push({ d, key: iso(d), inMonth: d.getMonth() === month })
-    if (i >= 34 && d.getMonth() !== month && d.getDay() === 6) break
+  for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const day = new Date(d)
+    cells.push({ d: day, key: iso(day), inMonth: day.getMonth() === month })
   }
   return cells
 }
