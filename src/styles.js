@@ -556,7 +556,7 @@ export const S = {
     zIndex: 45,
     padding: '10px 14px 12px',
     background: C.paper,
-    boxShadow: '0 -10px 22px rgba(2, 20, 60, 0.10)',
+    boxShadow: '0 -3px 10px rgba(2, 20, 60, 0.07)',
     boxSizing: 'border-box',
   },
 

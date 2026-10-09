@@ -13,7 +13,7 @@ import { useLang } from './i18n'
 
 // Injected from package.json at build time; see vite.config.js
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
-const PRIVACY_URL = 'https://honeaenterprises.com/kurbconnect'
+const PRIVACY_URL = 'https://honeaenterprises.com/kurbconnect/privacy-policy/'
 
 const EVENING = [16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5]
 const MORNING = [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5]
