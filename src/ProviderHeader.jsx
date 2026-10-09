@@ -2,9 +2,9 @@ import { ChevronDown, ChevronLeft } from 'lucide-react'
 import { S, C } from './styles'
 import { useLang } from './i18n'
 
-// The provider's navy banner. On a tab it shows the logo, the address and the
-// screen title; on a pushed sub-screen `onBack` turns it into the compact
-// variant with a back link and a smaller logo.
+// The provider's navy banner. The provider leads — their mark and name at full
+// size — and KurbConnect sits under it as the "powered by" lockup, deliberately
+// secondary. On a pushed sub-screen `onBack` gives the compact variant.
 
 // A map pin whose centre is a true hole: both shapes live in one path, so
 // evenodd cuts the dot out and the header art shows through.
@@ -28,7 +28,7 @@ function PinFilled({ size = 15, color = '#FFFFFF' }) {
 }
 
 export default function ProviderHeader({
-  org, address, onChangeAddress, title, onBack, backLabel,
+  org, address, onChangeAddress, onBack, backLabel,
 }) {
   const { t } = useLang()
   // KurbConnect's own chrome, every tenant. Only the logo is the provider's —
@@ -36,27 +36,55 @@ export default function ProviderHeader({
   // can't be trusted to keep white text legible.
   const compact = !!onBack
 
-  const logo = org?.logo_url ? (
-    <img
-      src={org.logo_url}
-      alt={org.organization_name || ''}
-      style={{ ...S.headLogo, height: compact ? 44 : 62 }}
-    />
-  ) : (
-    <span style={S.headWordLockup} aria-label="KurbConnect">
+  // With a provider: their mark and name, KurbConnect small underneath.
+  // Without one: KurbConnect's own lockup, drawn light so it reads on navy.
+  const brand = org?.logo_url ? (
+    <div style={S.headBrandRow}>
       <img
-        src="/kurbconnect-mark.png"
+        src={org.logo_url}
         alt=""
         style={{
-          ...S.headWordMark,
-          width: compact ? 28 : 36,
-          height: compact ? 28 : 36,
+          ...S.headBrandLogo,
+          width: compact ? 42 : 58,
+          height: compact ? 42 : 58,
         }}
       />
-      <span style={{ ...S.headWordText, fontSize: compact ? 20 : 25 }}>
-        Kurb<span style={S.brandWordAccent}>Connect</span>
+      <span style={{ minWidth: 0 }}>
+        {org.organization_name && (
+          <span
+            style={{
+              ...S.headOrgName,
+              fontSize: compact ? 17 : 21,
+              display: 'block',
+            }}
+          >
+            {org.organization_name}
+          </span>
+        )}
+        <img
+          src="/powered-by.webp"
+          alt="Powered by KurbConnect"
+          style={{ ...S.headPoweredBy, width: compact ? 104 : 126 }}
+        />
       </span>
-    </span>
+    </div>
+  ) : (
+    <div style={S.headBrandRow}>
+      <span style={S.headWordLockup} aria-label="KurbConnect">
+        <img
+          src="/kurbconnect-mark.png"
+          alt=""
+          style={{
+            ...S.headWordMark,
+            width: compact ? 28 : 38,
+            height: compact ? 28 : 38,
+          }}
+        />
+        <span style={{ ...S.headWordText, fontSize: compact ? 20 : 26 }}>
+          Kurb<span style={S.brandWordAccent}>Connect</span>
+        </span>
+      </span>
+    </div>
   )
 
   return (
@@ -64,34 +92,22 @@ export default function ProviderHeader({
       style={{
         ...S.headWrap,
         background: C.navy,
-        // contentSheet pulls up 20px, so these are 20 larger than the gap.
-        paddingBottom: compact ? 30 : 34,
+        // contentSheet pulls up 20px, so this is 20 more than the visible gap.
+        paddingBottom: compact ? 28 : 30,
         position: 'relative',
         overflow: 'hidden',
       }}
     >
       <div aria-hidden="true" style={S.headArcs} />
 
-      <div style={{ position: 'relative' }}>
-        {compact && (
-          <button
-            onClick={onBack}
-            style={{ ...S.backBtn, position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}
-          >
-            <ChevronLeft size={21} strokeWidth={2.2} />
-            {backLabel || t.back}
-          </button>
-        )}
-        <div style={S.headLogoRow}>{logo}</div>
-      </div>
-
-      {org && (
-        <img
-          src="/powered-by.webp"
-          alt="Powered by KurbConnect"
-          style={{ ...S.headLockup, width: compact ? 132 : 166 }}
-        />
+      {compact && (
+        <button onClick={onBack} style={{ ...S.backBtn, position: 'relative', marginBottom: 10 }}>
+          <ChevronLeft size={21} strokeWidth={2.2} />
+          {backLabel || t.back}
+        </button>
       )}
+
+      {brand}
 
       {!compact && address && onChangeAddress && (
         <button onClick={onChangeAddress} style={{ ...S.headAddress, position: 'relative' }}>
@@ -99,18 +115,6 @@ export default function ProviderHeader({
           <span style={S.headAddressText}>{address}</span>
           <ChevronDown size={16} strokeWidth={2.2} />
         </button>
-      )}
-
-      {title && (
-        <h1
-          style={{
-            ...S.headTitle,
-            fontSize: compact ? 26 : 28,
-            position: 'relative',
-          }}
-        >
-          {title}
-        </h1>
       )}
     </header>
   )

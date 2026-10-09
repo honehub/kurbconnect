@@ -79,7 +79,7 @@ export default function ScheduleView({
   }
 
   return (
-    <div style={{ paddingTop: 16, paddingBottom: 96 }}>
+    <div style={{ paddingTop: 4, paddingBottom: 24 }}>
       <div>
         <DayCard
           group={first}
@@ -89,6 +89,23 @@ export default function ScheduleView({
           lead
         />
       </div>
+
+      {onReport && (
+        <button onClick={onReport} data-report style={S.reportRow}>
+          <span style={{ ...S.reportIcon, background: accent }}>
+            <AlertCircle size={20} color="#FFFFFF" strokeWidth={2.2} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ ...S.settingName, display: 'block' }}>
+              {t.reportIssueTitle}
+            </span>
+            <span style={{ ...S.settingHint, display: 'block' }}>
+              {t.reportIssueHint}
+            </span>
+          </span>
+          <ChevronRight size={18} color={C.faint} />
+        </button>
+      )}
 
       {later.length > 0 && (
         <div>
@@ -104,47 +121,6 @@ export default function ScheduleView({
         </div>
       )}
 
-      {onReport && (
-        <div style={S.reportDock}>
-        <button
-          onClick={onReport}
-          data-report
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            width: '100%',
-            padding: '14px 15px',
-            textAlign: 'left',
-            background: C.paper,
-            border: `1px solid ${C.rule}`,
-            borderRadius: 16,
-            font: 'inherit',
-            cursor: 'pointer',
-            boxSizing: 'border-box',
-          }}
-        >
-          <span
-            style={{
-              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-              background: accent, display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <AlertCircle size={20} color="#FFFFFF" strokeWidth={2.2} />
-          </span>
-          <span style={{ flex: 1 }}>
-            <span style={{ ...S.settingName, display: 'block' }}>
-              {t.reportIssueTitle}
-            </span>
-            <span style={{ ...S.settingHint, display: 'block' }}>
-              {t.reportIssueHint}
-            </span>
-          </span>
-          <ChevronRight size={18} color={C.faint} />
-        </button>
-        </div>
-      )}
     </div>
   )
 }

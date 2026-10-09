@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Clock, X, AlertTriangle } from 'lucide-react'
 import { S, C, catColor, parseDate, formatDate } from './styles'
+import { holidayImpact, weekdayName } from './holidayImpact'
 import { useLang, CATEGORY_LABELS } from './i18n'
 import { getCollectionsInRange, getHolidays } from './supabase'
 import ServiceIcon from './ServiceIcon'
@@ -32,17 +33,15 @@ function monthCells(year, month) {
   return cells
 }
 
-export default function CalendarView({ org, coords, setoutTime, onGuidelines }) {
+export default function CalendarView({
+  org, coords, setoutTime, onGuidelines, onHoliday,
+  cursor, setCursor, selected, setSelected,
+}) {
   const { t, lang, locale } = useLang()
   const labels = CATEGORY_LABELS[lang]
 
-  const today = new Date()
-  const [cursor, setCursor] = useState(
-    () => new Date(today.getFullYear(), today.getMonth(), 1),
-  )
   const [collections, setCollections] = useState([])
   const [holidays, setHolidays] = useState([])
-  const [selected, setSelected] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const year = cursor.getFullYear()
@@ -104,13 +103,21 @@ export default function CalendarView({ org, coords, setoutTime, onGuidelines }) 
     setCursor(new Date(year, month + n, 1))
   }
 
-  const observanceText = {
-    normal: t.obsNormal,
-    shift_day: t.obsShiftDay,
-    shift_week: t.obsShiftWeek,
-    skip: t.obsSkip,
+
+  // The stored rule is provider-wide; this says what it means here.
+  function mineLine(h) {
+    const { changed, weekday, movedTo } = holidayImpact(h, pickupDates)
+    const day = weekdayName(weekday, locale)
+    if (!changed) return day ? t.yourPickupUnchanged(day) : t.yourPickupUnchangedPlain
+    if (h.observance === 'skip') {
+      return day ? t.yourPickupSkipped(day) : t.yourPickupSkippedPlain
+    }
+    const to = movedTo
+      && movedTo.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })
+    return day ? t.yourPickupMoves(day, to) : t.yourPickupMovesPlain(to)
   }
-  const observanceColor = (o) => (o === 'normal' ? C.brand : C.holidayInk)
+
+  const pickupDates = useMemo(() => [...byDate.keys()], [byDate])
 
   const sel = selected ? byDate.get(selected) : null
   const selExc = sel?.find((c) => c.is_schedule_exception)
@@ -172,10 +179,11 @@ export default function CalendarView({ org, coords, setoutTime, onGuidelines }) 
       ) : (
         holidays.map((h) => {
           const d = parseDate(h.observed_date)
+          const mine = holidayImpact(h, pickupDates)
           return (
             <button
               key={h.holiday_id}
-              onClick={onGuidelines}
+              onClick={() => onHoliday(h, pickupDates)}
               style={{
                 display: 'flex', alignItems: 'stretch', gap: 12,
                 width: 'calc(100% - 28px)', margin: '0 14px 8px', padding: 10,
@@ -195,12 +203,12 @@ export default function CalendarView({ org, coords, setoutTime, onGuidelines }) 
                 <span
                   style={{
                     ...S.holidayWhat, display: 'block',
-                    color: observanceColor(h.observance),
+                    color: mine.changed ? C.holidayInk : '#15803D',
                   }}
                 >
-                  {observanceText[h.observance] || h.observance}
+                  {mineLine(h)}
                 </span>
-                {h.moved_to && (
+                {h.moved_to && mine.changed && (
                   <span style={{ ...S.holidayWhen, display: 'block' }}>
                     {t.movedFromTo(
                       parseDate(h.observed_date).toLocaleDateString(locale, {
@@ -246,7 +254,7 @@ export default function CalendarView({ org, coords, setoutTime, onGuidelines }) 
               return (
                 <button
                   key={c.service_type_id}
-                  onClick={onGuidelines}
+                  onClick={() => onGuidelines(c.service_category)}
                   style={{ ...S.svcRow, width: '100%', font: 'inherit', textAlign: 'left', minHeight: 40 }}
                 >
                   <span style={{ ...S.svcIconTile, background: cc.tint, width: 30, height: 30 }}>

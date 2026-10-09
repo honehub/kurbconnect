@@ -48,7 +48,9 @@ export async function getAnnouncements(lat, lng) {
   return data || []
 }
 
-export async function submitReport({ lat, lng, type, description, contact, address }) {
+export async function submitReport({
+  lat, lng, type, description, contact, address, serviceTypeId, requestedDate,
+}) {
   if (!currentOrgId) throw new Error('No provider resolved for this location')
   const { data, error } = await supabase.rpc('submit_service_request', {
     input_organization_id: currentOrgId,
@@ -58,9 +60,21 @@ export async function submitReport({ lat, lng, type, description, contact, addre
     input_description: description,
     input_contact: contact || null,
     input_address: address || null,
+    input_service_type_id: serviceTypeId || null,
+    input_requested_date: requestedDate || null,
   })
   if (error) throw error
   return data
+}
+
+// Collections already past, for "which one did we miss?". Offering the
+// resident's real dates beats a free date field they can get wrong.
+export async function getRecentCollections(lat, lng, days = 28) {
+  if (!currentOrgId) return []
+  const to = new Date()
+  const from = new Date(to.getTime() - days * 86400000)
+  const d = (x) => x.toISOString().slice(0, 10)
+  return getCollectionsInRange(currentOrgId, lat, lng, d(from), d(to))
 }
 
 export async function geocodeAddress(address) {

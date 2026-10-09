@@ -118,47 +118,6 @@ export const S = {
     flexShrink: 0,
   },
 
-  hero: {
-    padding: '28px 20px 24px',
-    background: C.paper,
-    borderBottom: `1px solid ${C.rule}`,
-    position: 'relative',
-  },
-  heroRail: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-  },
-  heroDay: {
-    fontSize: 52,
-    lineHeight: 0.98,
-    fontWeight: 700,
-    letterSpacing: '-0.04em',
-    color: C.ink,
-    margin: 0,
-  },
-  heroDate: {
-    fontSize: 16,
-    fontWeight: 400,
-    color: C.muted,
-    marginTop: 7,
-  },
-  heroServices: { marginTop: 18, display: 'flex', flexDirection: 'column', gap: 5 },
-  heroServiceRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 14,
-    padding: '11px 14px',
-    borderRadius: 8,
-  },
-  heroServiceName: {
-    fontSize: 20,
-    fontWeight: 600,
-    letterSpacing: '-0.015em',
-  },
-
   agendaRow: {
     display: 'grid',
     gridTemplateColumns: '72px 1fr',
@@ -293,7 +252,7 @@ export const S = {
   headWrap: {
     // Runs under the status bar / notch; the inset keeps content clear of it.
     padding: '10px 20px 36px',
-    paddingTop: 'calc(10px + env(safe-area-inset-top))',
+    paddingTop: 'calc(16px + env(safe-area-inset-top))',
     color: '#FFFFFF',
   },
   // The provider-neutral header artwork. WebP (10.6 KB) with the navy
@@ -308,6 +267,51 @@ export const S = {
     backgroundRepeat: 'no-repeat',
   },
   headLogoRow: { display: 'flex', justifyContent: 'center' },
+
+  // Provider first, KurbConnect second: their mark and name at full size with
+  // the powered-by lockup tucked underneath.
+  headBrandRow: { display: 'flex', alignItems: 'center', gap: 12, position: 'relative' },
+  headBrandLogo: { objectFit: 'contain', display: 'block', flexShrink: 0 },
+  headOrgName: {
+    fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, color: '#FFFFFF',
+    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+  },
+  headPoweredBy: { display: 'block', height: 'auto', marginTop: 3 },
+
+  // The screen title now sits on the white sheet rather than the navy header,
+  // which is what gives it room to breathe under the banner.
+  pageTitle: {
+    margin: 0, padding: '17px 16px 3px', fontSize: 27, fontWeight: 800,
+    letterSpacing: '-0.035em', lineHeight: 1.18, color: C.ink,
+  },
+
+  // ---- Hero card (next pickup) ----
+  heroCard: {
+    margin: '4px 14px 12px', background: C.heroBg,
+    border: `1px solid ${C.tint}`, borderRadius: 18, overflow: 'hidden',
+  },
+  heroBody: { padding: '12px 14px 12px' },
+  heroPill: {
+    display: 'inline-block', padding: '4px 11px', borderRadius: 999,
+    background: C.brand, color: '#FFFFFF', fontSize: 11.5, fontWeight: 700,
+    letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 1.3,
+  },
+  heroDate: {
+    fontSize: 24, fontWeight: 800, letterSpacing: '-0.035em',
+    lineHeight: 1.2, color: C.ink, margin: '9px 0 7px',
+  },
+  heroSvcRow: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 28 },
+  heroSvcName: { fontSize: 17, fontWeight: 600, letterSpacing: '-0.015em', color: C.ink },
+  heroSetout: {
+    display: 'flex', alignItems: 'center', gap: 6, marginTop: 8,
+    fontSize: 14.5, fontWeight: 600, lineHeight: 1.2, color: C.muted,
+  },
+  heroStrip: {
+    display: 'flex', alignItems: 'center', gap: 9, width: '100%',
+    padding: '11px 14px', background: 'transparent',
+    borderTop: `1px solid ${C.tint}`, borderLeft: 'none', borderRight: 'none',
+    borderBottom: 'none', font: 'inherit', textAlign: 'left', cursor: 'pointer',
+  },
   // Before an address is set there is no provider logo, and the full-colour
   // KurbConnect PNG has navy lettering that vanishes on the navy header. This
   // is the same lockup drawn light, so it reads on the banner.
@@ -417,6 +421,16 @@ export const S = {
   },
   infoTitle: { fontSize: 15.5, fontWeight: 700, color: C.ink, letterSpacing: '-0.01em' },
   infoBody: { fontSize: 13.5, color: C.muted, lineHeight: 1.45, marginTop: 2 },
+  // Stand-ins for the store badges, so the card showing them is laid out now
+  // and only the artwork and links change when the listings go live.
+  storeRow: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' },
+  storeBtn: {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    padding: '7px 14px', borderRadius: 9, background: C.paper,
+    border: `1px solid ${C.tint}`, color: C.faint,
+    fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em',
+  },
+  storeNote: { display: 'block', marginTop: 7, fontSize: 12, color: C.faint },
 
   // The same card as infoCard above, in the warning palette: used where a
   // message reports a problem rather than explaining something.
@@ -441,7 +455,7 @@ export const S = {
     border: `1px solid ${C.rule}`, borderRadius: 18, overflow: 'hidden',
     boxShadow: '0 1px 2px rgba(2, 20, 60, 0.05)',
   },
-  dayCardTop: { display: 'flex', gap: 11, padding: 9 },
+  dayCardTop: { display: 'flex', gap: 11, padding: '8px 9px 9px' },
   dateBlock: { width: 62, flexShrink: 0, borderRadius: 11, padding: '6px 0 6px', textAlign: 'center', alignSelf: 'flex-start' },
   dateBlockDow: { fontSize: 12.5, fontWeight: 700, lineHeight: 1.1, letterSpacing: '0.03em', color: C.brand },
   dateBlockNum: { fontSize: 42, fontWeight: 700, lineHeight: 0.98, letterSpacing: '-0.04em', color: C.ink, margin: '2px 0 3px' },
@@ -462,9 +476,13 @@ export const S = {
     borderRadius: 8, marginTop: 4, minHeight: 24,
     background: C.paper, border: `1px solid ${C.rule}`,
   },
+  svcRowPlain: {
+    display: 'flex', alignItems: 'center', gap: 9, padding: 0,
+    marginTop: 2, minHeight: 23, background: 'none', border: 'none',
+  },
   svcIconTile: { width: 22, height: 22, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   svcName: { fontSize: 15, fontWeight: 600, lineHeight: 1.2, letterSpacing: '-0.012em', color: C.ink },
-  setoutRow: { display: 'flex', alignItems: 'center', gap: 5, marginTop: 6, fontSize: 12.5, fontWeight: 600, lineHeight: 1.2, color: C.muted },
+  setoutRow: { display: 'flex', alignItems: 'center', gap: 5, marginTop: 5, fontSize: 12.5, fontWeight: 600, lineHeight: 1.2, color: C.muted },
   reminderStrip: {
     display: 'flex', alignItems: 'center', gap: 9, width: '100%',
     padding: '6px 13px', background: C.reminderBg,
@@ -497,6 +515,33 @@ export const S = {
     boxShadow: '0 1px 2px rgba(2, 20, 60, 0.05)',
   },
   settingName: { fontSize: 15.5, fontWeight: 600, color: C.ink, letterSpacing: '-0.01em' },
+
+  // A reassurance, the counterpart to alertCard: nothing is changing.
+  okCard: {
+    display: 'flex', gap: 12, alignItems: 'center',
+    margin: '0 14px', padding: '13px 14px',
+    background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 16,
+  },
+  holidayHeroName: {
+    fontSize: 21, fontWeight: 800, letterSpacing: '-0.03em',
+    lineHeight: 1.2, color: C.ink,
+  },
+  holidayHeroDate: { fontSize: 14.5, color: C.muted, marginTop: 4 },
+
+  // ---- Guidelines accordion ----
+  accHead: {
+    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+    padding: '13px 14px', background: 'none', border: 'none',
+    font: 'inherit', textAlign: 'left', cursor: 'pointer',
+  },
+  accTitle: { fontSize: 16.5, fontWeight: 700, color: C.ink, letterSpacing: '-0.02em' },
+  accBody: { padding: '0 14px 4px', borderTop: `1px solid ${C.ruleSoft}` },
+  accSection: { padding: '12px 0 2px' },
+  accSectionTitle: {
+    fontSize: 15, fontWeight: 700, color: C.ink,
+    letterSpacing: '-0.015em', marginBottom: 4,
+  },
+  accSectionBody: { fontSize: 14.5, lineHeight: 1.55, color: C.body },
 
   // ---- Settings rows ----
   setRow: {
@@ -563,18 +608,18 @@ export const S = {
   },
 
   // Report bar: fixed above the tab bar so the schedule scrolls behind it.
-  reportDock: {
-    position: 'fixed',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '100%',
-    maxWidth: 480,
-    bottom: 'calc(58px + env(safe-area-inset-bottom))',
-    zIndex: 45,
-    padding: '10px 14px 12px',
-    background: C.paper,
-    boxShadow: '0 -3px 10px rgba(2, 20, 60, 0.07)',
-    boxSizing: 'border-box',
+  // Sits in the flow under the hero card. It used to be pinned above the tab
+  // bar, which meant the list had to be padded to clear it.
+  reportRow: {
+    display: 'flex', alignItems: 'center', gap: 12,
+    width: 'calc(100% - 28px)', margin: '0 14px 14px', padding: '14px 15px',
+    textAlign: 'left', background: C.paper, border: `1px solid ${C.rule}`,
+    borderRadius: 16, font: 'inherit', cursor: 'pointer', boxSizing: 'border-box',
+    boxShadow: '0 1px 2px rgba(2, 20, 60, 0.05)',
+  },
+  reportIcon: {
+    width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
 
   // ---- Month calendar ----

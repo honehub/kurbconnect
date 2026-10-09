@@ -1,12 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { CircleAlert, Wrench, PackagePlus, Truck, MessageSquare, Check, Camera, X } from 'lucide-react'
-import { submitReport } from './supabase'
+import { submitReport, getRecentCollections } from './supabase'
 import { pickPhoto, uploadPhotos, attachPhotos, MAX_PHOTOS } from './photos'
-import { S, C } from './styles'
-import { useLang } from './i18n'
+import { S, C, parseDate } from './styles'
+import { useLang, CATEGORY_LABELS } from './i18n'
 
 export default function ReportView({ coords, address, accent }) {
-  const { t } = useLang()
+  const { t, lang, locale } = useLang()
+  const labels = CATEGORY_LABELS[lang]
   const [type, setType] = useState(null)
   const [description, setDescription] = useState('')
   const [contact, setContact] = useState('')
@@ -15,6 +16,46 @@ export default function ReportView({ coords, address, accent }) {
   const [stage, setStage] = useState(null)
   const [sentId, setSentId] = useState(null)
   const [error, setError] = useState(null)
+  // Which collection was missed: asked as two fields so the resident does not
+  // have to spell it out in prose, and offered from their real history so the
+  // pair is always one that actually existed.
+  const [recent, setRecent] = useState([])
+  const [svcType, setSvcType] = useState('')
+  const [svcDate, setSvcDate] = useState('')
+
+  const missed = type === 'missed_pickup'
+
+  useEffect(() => {
+    if (!missed || !coords) return
+    let live = true
+    getRecentCollections(coords.lat, coords.lng)
+      .then((rows) => { if (live) setRecent(rows || []) })
+      .catch(() => { if (live) setRecent([]) })
+    return () => { live = false }
+  }, [missed, coords?.lat, coords?.lng])
+
+  // One entry per service the resident actually has.
+  const svcOptions = useMemo(() => {
+    const by = new Map()
+    for (const r of recent) {
+      if (!by.has(r.service_type_id)) {
+        by.set(r.service_type_id, {
+          id: r.service_type_id,
+          label: labels[r.service_category] || r.service_type_name,
+        })
+      }
+    }
+    return [...by.values()]
+  }, [recent, labels])
+
+  // Dates filtered by the chosen service, newest first, so the two answers
+  // can never contradict each other.
+  const dateOptions = useMemo(() => {
+    if (!svcType) return []
+    return [...new Set(
+      recent.filter((r) => r.service_type_id === svcType).map((r) => r.pickup_date),
+    )].sort((a, b) => b.localeCompare(a))
+  }, [recent, svcType])
 
   const TYPES = [
     { id: 'missed_pickup',     label: t.typeMissed,  Icon: CircleAlert },
@@ -42,6 +83,8 @@ export default function ReportView({ coords, address, accent }) {
             setType(null)
             setDescription('')
             setPhotos([])
+            setSvcType('')
+            setSvcDate('')
           }}
           style={{ ...S.buttonQuiet, marginTop: 24 }}
         >
@@ -76,6 +119,8 @@ export default function ReportView({ coords, address, accent }) {
         description,
         contact,
         address,
+        serviceTypeId: missed ? svcType || null : null,
+        requestedDate: missed ? svcDate || null : null,
       })
 
       if (photos.length) {
@@ -124,6 +169,45 @@ export default function ReportView({ coords, address, accent }) {
 
       {type && (
         <div style={{ padding: '22px 20px', background: C.paper, borderTop: `1px solid ${C.rule}` }}>
+          {missed && svcOptions.length > 0 && (
+            <div style={{ marginBottom: 18 }}>
+              <label style={S.label} htmlFor="svctype">{t.whichCollection}</label>
+              <select
+                id="svctype"
+                value={svcType}
+                onChange={(e) => { setSvcType(e.target.value); setSvcDate('') }}
+                style={S.input}
+              >
+                <option value="">{t.choosePlaceholder}</option>
+                {svcOptions.map((o) => (
+                  <option key={o.id} value={o.id}>{o.label}</option>
+                ))}
+              </select>
+
+              <label style={{ ...S.label, marginTop: 14 }} htmlFor="svcdate">
+                {t.whichDate}
+              </label>
+              <select
+                id="svcdate"
+                value={svcDate}
+                onChange={(e) => setSvcDate(e.target.value)}
+                disabled={!svcType}
+                style={{ ...S.input, opacity: svcType ? 1 : 0.5 }}
+              >
+                <option value="">
+                  {svcType ? t.choosePlaceholder : t.chooseCollectionFirst}
+                </option>
+                {dateOptions.map((d) => (
+                  <option key={d} value={d}>
+                    {parseDate(d).toLocaleDateString(locale, {
+                      weekday: 'long', month: 'long', day: 'numeric',
+                    })}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <label style={S.label} htmlFor="desc">{t.describeIt}</label>
           <textarea
             id="desc"

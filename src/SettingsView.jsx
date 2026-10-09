@@ -143,6 +143,12 @@ export default function SettingsView({ accent, org, section = 'reminders' }) {
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ ...S.infoTitle, display: 'block' }}>{t.openOnPhoneTitle}</span>
             <span style={{ ...S.infoBody, display: 'block' }}>{t.openOnPhone}</span>
+            {/* Placeholder until the listings are live — see storeBtn. */}
+            <span style={S.storeRow}>
+              <span style={S.storeBtn}>App Store</span>
+              <span style={S.storeBtn}>Google Play</span>
+            </span>
+            <span style={S.storeNote}>{t.storeComingSoon}</span>
           </span>
         </div>
       )}
@@ -202,6 +208,7 @@ export default function SettingsView({ accent, org, section = 'reminders' }) {
           </div>
           <Toggle
             on={prefs.reminders_enabled}
+            off={pushOff}
             accent={accent}
             onChange={(v) => update({ reminders_enabled: v })}
           />
@@ -278,6 +285,7 @@ export default function SettingsView({ accent, org, section = 'reminders' }) {
                   <span style={{ ...S.settingName, flex: 1 }}>{label}</span>
                   <Toggle
                     on={prefs.enabled_categories.includes(id)}
+                    off={pushOff}
                     accent={accent}
                     onChange={() => toggleCategory(id)}
                   />
@@ -306,6 +314,7 @@ export default function SettingsView({ accent, org, section = 'reminders' }) {
           </div>
           <Toggle
             on={prefs.alerts_enabled}
+            off={pushOff}
             accent={accent}
             onChange={(v) => update({ alerts_enabled: v })}
           />
@@ -499,20 +508,21 @@ function Segment({ value, onChange, options }) {
   )
 }
 
-function Toggle({ on, onChange, accent }) {
+function Toggle({ on, onChange, accent, off }) {
+  const shown = off ? false : on
   return (
     <button
       onClick={() => onChange(!on)}
-      aria-pressed={on}
+      aria-pressed={shown}
       style={{
         width: 50, height: 30, borderRadius: 15, border: 'none',
-        background: on ? accent : C.rule,
+        background: shown ? accent : C.rule,
         position: 'relative', cursor: 'pointer',
         transition: 'background 0.15s', flexShrink: 0, padding: 0,
       }}
     >
       <span style={{
-        position: 'absolute', top: 3, left: on ? 23 : 3,
+        position: 'absolute', top: 3, left: shown ? 23 : 3,
         width: 24, height: 24, borderRadius: '50%',
         background: '#fff', transition: 'left 0.15s',
         boxShadow: '0 1px 3px rgba(0,0,0,0.2)',

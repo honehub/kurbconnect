@@ -19,6 +19,7 @@ import MoreView from './MoreView'
 import SplashView from './SplashView'
 import WelcomeView from './WelcomeView'
 import GuidelinesView from './GuidelinesView'
+import HolidayView from './HolidayView'
 import ProviderHeader from './ProviderHeader'
 import { S, C, parseDate } from './styles'
 import { useLang } from './i18n'
@@ -83,7 +84,19 @@ export default function App() {
   })
   // 'splash' while the saved address resolves, 'welcome' when there isn't one.
   const [phase, setPhase] = useState('splash')
+  const [guideCategory, setGuideCategory] = useState(null)
+  const [calCursor, setCalCursor] = useState(() => {
+    const n = new Date()
+    return new Date(n.getFullYear(), n.getMonth(), 1)
+  })
+  const [calSelected, setCalSelected] = useState(null)
+  // The holiday being inspected, with the pickup dates it is judged against.
+  const [holiday, setHoliday] = useState(null)
+  const [holidayDates, setHolidayDates] = useState([])
   const swipe = useRef(null)
+  // Where the resident has been. Every navigation records the screen it left,
+  // so a swipe back can return across tabs as well as out of a pushed screen.
+  const [history, setHistory] = useState([])
   const [splashOrg, setSplashOrg] = useState(readLastProvider)
 
   const accent = '#0078FE'
@@ -128,14 +141,44 @@ export default function App() {
     if (tab !== 'messages' && unreadIds.size) setUnreadIds(new Set())
   }, [tab])
 
+  // The service the resident tapped decides which guidance section opens.
+  function openGuidelines(category) {
+    setGuideCategory(typeof category === 'string' ? category : null)
+    navigate(tab, 'guidelines')
+  }
+
+  function openHoliday(h, pickupDates) {
+    setHoliday(h)
+    setHolidayDates(pickupDates || [])
+    navigate(tab, 'holiday')
+  }
+
+  // The single way to move. Anything that changes screen goes through here,
+  // which is what keeps the back stack honest.
+  function navigate(nextTab, nextSub = null) {
+    if (nextTab === tab && nextSub === sub) return
+    setHistory((h) => [...h.slice(-9), { tab, sub }])
+    setTab(nextTab)
+    setSub(nextSub)
+  }
+
+  function goBack() {
+    if (history.length === 0) {
+      setSub(null)
+      return
+    }
+    const prev = history[history.length - 1]
+    setHistory(history.slice(0, -1))
+    setTab(prev.tab)
+    setSub(prev.sub)
+  }
+
   function changeTab(next) {
-    setSub(null)
-    setTab(next)
+    navigate(next, null)
   }
 
   function changeAddress() {
-    setTab('home')
-    setSub(null)
+    navigate('home', null)
     setEditing(true)
   }
 
@@ -319,7 +362,16 @@ export default function App() {
     reminders: t.remindersTitle,
     settings: t.settingsTitle,
     guidelines: t.guidelinesTitle,
+    holiday: holiday?.name || t.holidayTitle,
     report: t.reportIssueTitle,
+  }
+
+  // Name the screen the back arrow actually returns to, rather than assuming
+  // it is the current tab.
+  function backLabel() {
+    const prev = history[history.length - 1]
+    if (!prev) return t.navHome
+    return prev.sub ? SUB_TITLES[prev.sub] : TITLES[prev.tab]
   }
 
   if (phase === 'splash') return <SplashView provider={splashOrg} />
@@ -336,8 +388,9 @@ export default function App() {
     )
   }
 
-  // Swipe right to leave a pushed screen, matching the iOS back gesture. The
-  // map pans horizontally, so a swipe starting inside it is left alone.
+  // Swipe right to go back a screen, matching the iOS back gesture — out of a
+  // pushed screen, or across to wherever the resident came from. The map pans
+  // horizontally, so a swipe starting inside it is left alone.
   function onTouchStart(e) {
     if (e.touches.length !== 1 || e.target.closest?.('.leaflet-container')) {
       swipe.current = null
@@ -351,7 +404,7 @@ export default function App() {
     swipe.current = null
     if (!from || !sub) return
     const to = e.changedTouches[0]
-    if (to.clientX - from.x > 70 && Math.abs(to.clientY - from.y) < 50) setSub(null)
+    if (to.clientX - from.x > 70 && Math.abs(to.clientY - from.y) < 50) goBack()
   }
 
   return (
@@ -362,8 +415,8 @@ export default function App() {
           address={!sub && !editing ? address : null}
           onChangeAddress={changeAddress}
           title={sub ? SUB_TITLES[sub] : TITLES[tab]}
-          onBack={sub ? () => setSub(null) : null}
-          backLabel={tab === 'more' ? t.navMore : t.navHome}
+          onBack={sub ? goBack : null}
+          backLabel={backLabel()}
         />
 
         <div style={S.contentSheet}>
@@ -373,7 +426,12 @@ export default function App() {
         {sub === 'settings' && (
           <SettingsView accent={accent} org={org} section="general" />
         )}
-        {sub === 'guidelines' && <GuidelinesView org={org} />}
+        {sub === 'holiday' && (
+          <HolidayView holiday={holiday} pickupDates={holidayDates} />
+        )}
+        {sub === 'guidelines' && (
+          <GuidelinesView org={org} openCategory={guideCategory} />
+        )}
         {sub === 'report' && (
           <ReportView coords={coords} address={address} accent={accent} />
         )}
@@ -394,11 +452,11 @@ export default function App() {
             onCancelMap={() => { setShowMap(false); setStatus(null) }}
             editing={editing}
             setEditing={setEditing}
-            onReport={() => setSub('report')}
+            onReport={() => navigate(tab, 'report')}
             setoutTime={setoutTime}
             reminder={reminder}
-            onReminder={() => setSub('reminders')}
-            onGuidelines={() => setSub('guidelines')}
+            onReminder={() => navigate(tab, 'reminders')}
+            onGuidelines={openGuidelines}
             onUseLocation={useMyLocation}
           />
         )}
@@ -408,7 +466,12 @@ export default function App() {
             org={org}
             coords={coords}
             setoutTime={setoutTime}
-            onGuidelines={() => setSub('guidelines')}
+            onGuidelines={openGuidelines}
+            onHoliday={openHoliday}
+            cursor={calCursor}
+            setCursor={setCalCursor}
+            selected={calSelected}
+            setSelected={setCalSelected}
           />
         )}
 
@@ -416,7 +479,9 @@ export default function App() {
           <AlertsView alerts={alerts} loading={alertsLoading} unreadIds={unreadIds} />
         )}
 
-        {!sub && tab === 'more' && <MoreView onOpen={setSub} accent={accent} />}
+        {!sub && tab === 'more' && (
+          <MoreView onOpen={(key) => navigate('more', key)} accent={accent} />
+        )}
         </div>
       </div>
 
