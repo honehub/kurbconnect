@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "node scripts/sync-version.mjs",
+    "release:patch": "npm version patch --no-git-tag-version && node scripts/sync-version.mjs",
+    "release:minor": "npm version minor --no-git-tag-version && node scripts/sync-version.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
@@ -38,5 +41,6 @@
   },
   "allowScripts": {
     "sharp@0.32.6": true
-  }
+  },
+  "buildNumber": 1
 }
