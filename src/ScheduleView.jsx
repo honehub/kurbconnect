@@ -21,7 +21,14 @@ export default function ScheduleView({
   if (!hasSchedule || editing) {
     return (
       <>
-        {status && <div style={{ ...S.notice, marginTop: 8 }}>{status}</div>}
+        {status && (
+          <div style={S.alertCard}>
+            <span style={S.alertCardIcon}>
+              <AlertCircle size={20} color={C.holidayInk} strokeWidth={2} />
+            </span>
+            <span style={S.alertCardText}>{status}</span>
+          </div>
+        )}
 
         <div style={S.section}>
           <label style={S.label} htmlFor="addr">{t.yourAddress}</label>

@@ -418,6 +418,23 @@ export const S = {
   infoTitle: { fontSize: 15.5, fontWeight: 700, color: C.ink, letterSpacing: '-0.01em' },
   infoBody: { fontSize: 13.5, color: C.muted, lineHeight: 1.45, marginTop: 2 },
 
+  // The same card as infoCard above, in the warning palette: used where a
+  // message reports a problem rather than explaining something.
+  alertCard: {
+    display: 'flex', gap: 12, alignItems: 'center',
+    margin: '14px 14px 0', padding: '13px 14px',
+    background: C.holidayWarn, border: `1px solid ${C.holiday}`, borderRadius: 16,
+  },
+  alertCardIcon: {
+    width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: C.paper,
+  },
+  alertCardText: {
+    flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 600,
+    color: C.holidayInk, lineHeight: 1.45, letterSpacing: '-0.01em',
+  },
+
   // ---- Day cards ----
   dayCard: {
     margin: '0 14px 6px', background: C.paper,
