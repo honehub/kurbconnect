@@ -26,8 +26,12 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>KurbConnect uses the camera so you can photograph a missed pickup or other problem and attach it to your report.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>KurbConnect uses your location to find the collection schedule for your address.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>KurbConnect needs access to your photos so you can attach an existing picture of a missed pickup or other problem to your report.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
