@@ -106,7 +106,12 @@ export default function ReportView({ coords, address, accent }) {
       const msg = String(e?.message || '')
       if (!/cancel/i.test(msg)) {
         console.error('addPhoto:', e)
-        setPhotoError(/denied|permission/i.test(msg) ? t.photoDenied : t.photoFailed)
+        setPhotoError({
+          text: /denied|permission/i.test(msg) ? t.photoDenied : t.photoFailed,
+          // Carried through while the app is in beta: without it a failure
+          // here costs a whole build cycle to identify.
+          detail: msg,
+        })
       }
     }
   }
@@ -243,8 +248,13 @@ export default function ReportView({ coords, address, accent }) {
               </div>
             ))}
             {photoError && (
-              <div style={{ ...S.alertCardText, color: C.alert, marginBottom: 10 }}>
-                {photoError}
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ ...S.alertCardText, color: C.alert }}>{photoError.text}</div>
+                {photoError.detail && (
+                  <div style={{ fontSize: 11, color: C.faint, marginTop: 3 }}>
+                    {photoError.detail}
+                  </div>
+                )}
               </div>
             )}
             {photos.length < MAX_PHOTOS && (
