@@ -32,6 +32,8 @@
 	<string>KurbConnect uses your location to find the collection schedule for your address.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>KurbConnect needs access to your photos so you can attach an existing picture of a missed pickup or other problem to your report.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>KurbConnect can save a photo you take for a report to your photo library.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

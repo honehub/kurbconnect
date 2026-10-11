@@ -95,6 +95,9 @@ export default function App() {
   const [holiday, setHoliday] = useState(null)
   const [holidayDates, setHolidayDates] = useState([])
   const goBackRef = useRef(null)
+  // Whether the screen on display was reached from a link inside the app,
+  // which is the only case where a swipe back makes sense.
+  const viaLinkRef = useRef(false)
   // Where the resident has been. Every navigation records the screen it left,
   // so a swipe back can return across tabs as well as out of a pushed screen.
   const [history, setHistory] = useState([])
@@ -156,26 +159,36 @@ export default function App() {
 
   // The single way to move. Anything that changes screen goes through here,
   // which is what keeps the back stack honest.
-  function navigate(nextTab, nextSub = null) {
+  //
+  // `fromNav` marks a tap on the bottom bar. Those are lateral moves between
+  // top-level sections, not a journey into something, so they do not earn a
+  // swipe back — swiping out of a section the resident chose from the menu
+  // would drop them somewhere they never asked for. Each history entry
+  // remembers how its screen was reached, so going back restores the right
+  // answer rather than guessing.
+  function navigate(nextTab, nextSub = null, { fromNav = false } = {}) {
     if (nextTab === tab && nextSub === sub) return
-    setHistory((h) => [...h.slice(-9), { tab, sub }])
+    setHistory((h) => [...h.slice(-9), { tab, sub, viaLink: viaLinkRef.current }])
     setTab(nextTab)
     setSub(nextSub)
+    viaLinkRef.current = !fromNav
   }
 
   function goBack() {
     if (history.length === 0) {
       setSub(null)
+      viaLinkRef.current = false
       return
     }
     const prev = history[history.length - 1]
     setHistory(history.slice(0, -1))
     setTab(prev.tab)
     setSub(prev.sub)
+    viaLinkRef.current = prev.viaLink === true
   }
 
   function changeTab(next) {
-    navigate(next, null)
+    navigate(next, null, { fromNav: true })
   }
 
   goBackRef.current = goBack
@@ -206,6 +219,8 @@ export default function App() {
       if (e.touches.length !== 1) return
       const touch = e.touches[0]
       if (touch.clientX > EDGE) return
+      // Bottom-bar sections are not swiped out of; see navigate().
+      if (!viaLinkRef.current) return
       const el = e.target
       // The map pans horizontally; leave gestures that begin on it alone.
       if (el && typeof el.closest === 'function' && el.closest('.leaflet-container')) return
