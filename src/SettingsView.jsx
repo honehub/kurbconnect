@@ -13,6 +13,9 @@ import { useLang } from './i18n'
 
 // Injected from package.json at build time; see vite.config.js
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
+// The build number is what TestFlight and App Store Connect label a build
+// with, so showing it here lets a tester name exactly what they are on.
+const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
 const PRIVACY_URL = 'https://honeaenterprises.com/kurbconnect/privacy-policy/'
 
 const EVENING = [16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5]
@@ -406,7 +409,9 @@ export default function SettingsView({ accent, org, section = 'reminders' }) {
         <div style={{ ...S.setRow, gap: 13 }}>
           <FileText size={19} color={C.muted} strokeWidth={1.9} />
           <span style={{ ...S.settingName, flex: 1 }}>{t.version}</span>
-          <span style={S.valueRight}>{APP_VERSION}</span>
+          <span style={S.valueRight}>
+            {APP_BUILD ? `${APP_VERSION} (${APP_BUILD})` : APP_VERSION}
+          </span>
         </div>
         <LinkRow
           href={PRIVACY_URL}

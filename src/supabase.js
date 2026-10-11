@@ -101,6 +101,32 @@ export async function geocodeAddress(address) {
   }
 }
 
+// Addresses are stored uppercase; this is how they are shown.
+export function prettyAddress(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/\b[a-z]/g, (c) => c.toUpperCase())
+    .replace(/\bFm\b/g, 'FM')
+    .replace(/\bUs\b/g, 'US')
+    .replace(/\bRr\b/g, 'RR')
+    .replace(/\b(\d+)(St|Nd|Rd|Th)\b/g, (_, n, suf) => n + suf.toLowerCase())
+}
+
+// The provider's own address table, which is the authority for the addresses
+// they actually serve. Asked before Nominatim, whose coverage of these
+// subdivisions is thin enough that it answers with a nearby golf course
+// rather than the house the resident is standing at.
+export async function nearestAddress(lat, lng) {
+  const { data, error } = await supabase.rpc('nearest_address', {
+    input_lat: lat,
+    input_lng: lng,
+  })
+  if (error) { console.error('nearest_address:', error); return null }
+  const row = data?.[0]
+  if (!row) return null
+  return prettyAddress(row.full_address) + (row.unit ? ` #${row.unit}` : '')
+}
+
 export async function reverseGeocode(lat, lng) {
   const url = new URL('https://nominatim.openstreetmap.org/reverse')
   url.searchParams.set('lat', lat)

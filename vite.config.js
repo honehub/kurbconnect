@@ -8,6 +8,7 @@ export default defineConfig({
   // carry its own copy, and the two had already drifted apart.
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_BUILD__: JSON.stringify(String(pkg.buildNumber ?? '')),
   },
   server: {
     proxy: {

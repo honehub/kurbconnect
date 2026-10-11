@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { searchAddresses } from './supabase'
+import { searchAddresses, prettyAddress as pretty } from './supabase'
 import { S, C } from './styles'
 
 export default function AddressInput({ value, onChange, onSelect, onSubmit, placeholder }) {
@@ -95,16 +95,6 @@ export default function AddressInput({ value, onChange, onSelect, onSubmit, plac
       )}
     </div>
   )
-}
-
-function pretty(s) {
-  return String(s || '')
-    .toLowerCase()
-    .replace(/\b[a-z]/g, (c) => c.toUpperCase())
-    .replace(/\bFm\b/g, 'FM')
-    .replace(/\bUs\b/g, 'US')
-    .replace(/\bRr\b/g, 'RR')
-    .replace(/\b(\d+)(St|Nd|Rd|Th)\b/g, (_, n, suf) => n + suf.toLowerCase())
 }
 
 const list = {

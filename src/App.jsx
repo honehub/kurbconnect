@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   geocodeAddress,
   reverseGeocode,
+  nearestAddress,
   getSchedule,
   getAnnouncements,
   findOrganization,
@@ -93,7 +94,7 @@ export default function App() {
   // The holiday being inspected, with the pickup dates it is judged against.
   const [holiday, setHoliday] = useState(null)
   const [holidayDates, setHolidayDates] = useState([])
-  const swipe = useRef(null)
+  const goBackRef = useRef(null)
   // Where the resident has been. Every navigation records the screen it left,
   // so a swipe back can return across tabs as well as out of a pushed screen.
   const [history, setHistory] = useState([])
@@ -177,6 +178,52 @@ export default function App() {
     navigate(next, null)
   }
 
+  goBackRef.current = goBack
+
+  // Swipe right to go back a screen — out of a pushed screen, or across to
+  // wherever the resident came from.
+  //
+  // Listening on the document rather than on the page element, and treating
+  // touchcancel as an ending: WebKit cancels the sequence once it decides a
+  // drag is a pan, so a handler waiting only for touchend never fires on iOS.
+  useEffect(() => {
+    let from = null
+
+    const start = (e) => {
+      if (e.touches.length !== 1) { from = null; return }
+      const el = e.target
+      // The map pans horizontally; leave gestures that begin on it alone.
+      if (el && typeof el.closest === 'function' && el.closest('.leaflet-container')) {
+        from = null
+        return
+      }
+      from = { x: e.touches[0].clientX, y: e.touches[0].clientY, at: Date.now() }
+    }
+
+    const finish = (e) => {
+      const began = from
+      from = null
+      const touch = began && e.changedTouches && e.changedTouches[0]
+      if (!touch) return
+      const dx = touch.clientX - began.x
+      const dy = touch.clientY - began.y
+      // Decisively rightward, decisively horizontal, and not a slow drag.
+      if (dx > 60 && Math.abs(dy) < 60 && dx > Math.abs(dy) * 1.5
+          && Date.now() - began.at < 800) {
+        goBackRef.current?.()
+      }
+    }
+
+    document.addEventListener('touchstart', start, { passive: true })
+    document.addEventListener('touchend', finish, { passive: true })
+    document.addEventListener('touchcancel', finish, { passive: true })
+    return () => {
+      document.removeEventListener('touchstart', start)
+      document.removeEventListener('touchend', finish)
+      document.removeEventListener('touchcancel', finish)
+    }
+  }, [])
+
   function changeAddress() {
     navigate('home', null)
     setEditing(true)
@@ -251,7 +298,9 @@ export default function App() {
         setEditing(false)
         setPinned({ lat: pos.lat, lng: pos.lng })
         localStorage.setItem('pinned', JSON.stringify({ lat: pos.lat, lng: pos.lng }))
+        // Our own addresses first; only fall back off-network of them.
         const label =
+          (await nearestAddress(pos.lat, pos.lng)) ||
           (await reverseGeocode(pos.lat, pos.lng)) ||
           `${t.pinnedLocation} (${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)})`
         setAddress(label)
@@ -388,27 +437,8 @@ export default function App() {
     )
   }
 
-  // Swipe right to go back a screen, matching the iOS back gesture — out of a
-  // pushed screen, or across to wherever the resident came from. The map pans
-  // horizontally, so a swipe starting inside it is left alone.
-  function onTouchStart(e) {
-    if (e.touches.length !== 1 || e.target.closest?.('.leaflet-container')) {
-      swipe.current = null
-      return
-    }
-    swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-  }
-
-  function onTouchEnd(e) {
-    const from = swipe.current
-    swipe.current = null
-    if (!from || !sub) return
-    const to = e.changedTouches[0]
-    if (to.clientX - from.x > 70 && Math.abs(to.clientY - from.y) < 50) goBack()
-  }
-
   return (
-    <div style={S.page} data-page onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div style={S.page} data-page>
       <div style={S.shell}>
         <ProviderHeader
           org={org}

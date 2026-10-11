@@ -16,6 +16,7 @@ export default function ReportView({ coords, address, accent }) {
   const [stage, setStage] = useState(null)
   const [sentId, setSentId] = useState(null)
   const [error, setError] = useState(null)
+  const [photoError, setPhotoError] = useState(null)
   // Which collection was missed: asked as two fields so the resident does not
   // have to spell it out in prose, and offered from their real history so the
   // pair is always one that actually existed.
@@ -95,11 +96,18 @@ export default function ReportView({ coords, address, accent }) {
   }
 
   async function addPhoto() {
+    setPhotoError(null)
     try {
       const result = await pickPhoto()
       if (result) setPhotos((p) => [...p, result].slice(0, MAX_PHOTOS))
-    } catch {
-      // cancelled or denied — nothing to report
+    } catch (e) {
+      // Cancelling is not a failure. Anything else is, and swallowing it is
+      // why a broken photo picker looked like a dead button.
+      const msg = String(e?.message || '')
+      if (!/cancel/i.test(msg)) {
+        console.error('addPhoto:', e)
+        setPhotoError(/denied|permission/i.test(msg) ? t.photoDenied : t.photoFailed)
+      }
     }
   }
 
@@ -234,6 +242,11 @@ export default function ReportView({ coords, address, accent }) {
                 </button>
               </div>
             ))}
+            {photoError && (
+              <div style={{ ...S.alertCardText, color: C.alert, marginBottom: 10 }}>
+                {photoError}
+              </div>
+            )}
             {photos.length < MAX_PHOTOS && (
               <button onClick={addPhoto} style={addTile}>
                 <Camera size={20} color={C.muted} strokeWidth={1.8} />

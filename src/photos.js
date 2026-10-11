@@ -6,12 +6,16 @@ export const MAX_PHOTOS = 3
 
 // Shrink to max 1280px on the long edge and re-encode as JPEG.
 // Phone photos are 4-12MB; this lands around 150-300KB.
-function compress(dataUrl) {
+function compressFromUrl(url) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
       const max = 1280
       let { width, height } = img
+      if (!width || !height) {
+        reject(new Error('decode failed'))
+        return
+      }
       if (width > max || height > max) {
         const scale = max / Math.max(width, height)
         width = Math.round(width * scale)
@@ -22,48 +26,64 @@ function compress(dataUrl) {
       canvas.height = height
       canvas.getContext('2d').drawImage(img, 0, 0, width, height)
       canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error('compress failed'))),
+        (blob) => (blob ? resolve(blob) : reject(new Error('encode failed'))),
         'image/jpeg',
         0.75,
       )
     }
     img.onerror = () => reject(new Error('load failed'))
-    img.src = dataUrl
+    img.src = url
   })
 }
 
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader()
-    r.onload = () => resolve(r.result)
-    r.onerror = reject
-    r.readAsDataURL(file)
-  })
+// Reading through an object URL keeps the canvas same-origin, so toBlob is
+// never refused for tainting.
+async function compressBlob(raw) {
+  const url = URL.createObjectURL(raw)
+  try {
+    return await compressFromUrl(url)
+  } finally {
+    URL.revokeObjectURL(url)
+  }
 }
 
 // Opens the camera or gallery on a phone; falls back to a file picker on web.
 export async function pickPhoto() {
   if (Capacitor.isNativePlatform()) {
+    // Uri, not DataUrl. A full-size iPhone photo as base64 is tens of
+    // megabytes of string, which the WebView will not reliably decode as an
+    // image — the compress step just failed and the photo never appeared.
+    // A file reference costs nothing, and `width` lets the native layer do
+    // the first downscale before JavaScript sees it at all.
     const photo = await Camera.getPhoto({
       quality: 80,
       allowEditing: false,
-      resultType: CameraResultType.DataUrl,
+      correctOrientation: true,
+      width: 1600,
+      resultType: CameraResultType.Uri,
       source: CameraSource.Prompt,
     })
-    const blob = await compress(photo.dataUrl)
+    if (!photo?.webPath) return null
+
+    const res = await fetch(photo.webPath)
+    if (!res.ok) throw new Error('read failed')
+    const blob = await compressBlob(await res.blob())
     return { blob, preview: URL.createObjectURL(blob) }
   }
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'image/*'
     input.onchange = async () => {
       const file = input.files?.[0]
       if (!file) return resolve(null)
-      const dataUrl = await fileToDataUrl(file)
-      const blob = await compress(dataUrl)
-      resolve({ blob, preview: URL.createObjectURL(blob) })
+      try {
+        const blob = await compressBlob(file)
+        resolve({ blob, preview: URL.createObjectURL(blob) })
+      } catch (e) {
+        reject(e)
+      }
     }
     input.click()
   })
