@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   Trash2, Phone, Mail, Globe, ExternalLink, Clock, Bell, BellOff, Smartphone,
-  CalendarDays, Building2, FileText, ShieldCheck, ChevronRight,
+  CalendarDays, Building2, FileText, ShieldCheck, ChevronRight, Info,
 } from 'lucide-react'
 import {
   loadPreferences, savePreferences, getDeviceToken, deactivateDevice,
@@ -17,6 +17,8 @@ const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '
 // with, so showing it here lets a tester name exactly what they are on.
 const APP_BUILD = typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : ''
 const PRIVACY_URL = 'https://honeaenterprises.com/kurbconnect/privacy-policy/'
+// KurbConnect's own terms, identical for every provider.
+const TERMS_URL = 'https://honeaenterprises.com/kurbconnect/terms-of-service/'
 
 const EVENING = [16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5]
 const MORNING = [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5]
@@ -407,7 +409,7 @@ export default function SettingsView({ accent, org, section = 'reminders' }) {
       <div style={S.groupHead}>{t.about}</div>
       <div style={S.card}>
         <div style={{ ...S.setRow, gap: 13 }}>
-          <FileText size={19} color={C.muted} strokeWidth={1.9} />
+          <Info size={19} color={C.muted} strokeWidth={1.9} />
           <span style={{ ...S.settingName, flex: 1 }}>{t.version}</span>
           <span style={S.valueRight}>
             {APP_BUILD ? `${APP_VERSION} (${APP_BUILD})` : APP_VERSION}
@@ -417,6 +419,13 @@ export default function SettingsView({ accent, org, section = 'reminders' }) {
           href={PRIVACY_URL}
           Icon={ShieldCheck}
           label={t.privacyPolicy}
+          accent={accent}
+          external
+        />
+        <LinkRow
+          href={TERMS_URL}
+          Icon={FileText}
+          label={t.termsOfService}
           accent={accent}
           external
           last

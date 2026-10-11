@@ -183,44 +183,64 @@ export default function App() {
   // Swipe right to go back a screen — out of a pushed screen, or across to
   // wherever the resident came from.
   //
-  // Listening on the document rather than on the page element, and treating
-  // touchcancel as an ending: WebKit cancels the sequence once it decides a
-  // drag is a pan, so a handler waiting only for touchend never fires on iOS.
+  // The decision is made during touchmove, not at the end of the gesture.
+  // WebKit fires touchcancel the moment it claims a drag as a pan, and the
+  // coordinates it reports are wherever the finger happened to be then —
+  // often a third of the way through a real swipe. Measuring at the end
+  // therefore rejected good gestures at random, which is what made this feel
+  // unreliable rather than plainly broken. Watching the move stream fires the
+  // instant the gesture qualifies, before anything can cancel it.
+  //
+  // Starting near the left edge is the iOS convention, and it keeps the
+  // gesture clear of horizontal content and of ordinary vertical scrolling.
   useEffect(() => {
+    const EDGE = 44 // start zone, px from the left
+    const TRIGGER = 70 // rightward travel that counts as a swipe
+    const DRIFT = 45 // vertical slack before it reads as a scroll
+    const LIMIT = 700 // ms; a slow drag is not a swipe
+
     let from = null
 
     const start = (e) => {
-      if (e.touches.length !== 1) { from = null; return }
+      from = null
+      if (e.touches.length !== 1) return
+      const touch = e.touches[0]
+      if (touch.clientX > EDGE) return
       const el = e.target
       // The map pans horizontally; leave gestures that begin on it alone.
-      if (el && typeof el.closest === 'function' && el.closest('.leaflet-container')) {
+      if (el && typeof el.closest === 'function' && el.closest('.leaflet-container')) return
+      from = { x: touch.clientX, y: touch.clientY, at: Date.now() }
+    }
+
+    const move = (e) => {
+      if (!from || e.touches.length !== 1) return
+      const touch = e.touches[0]
+      const dx = touch.clientX - from.x
+      const dy = touch.clientY - from.y
+      // Vertical first, or too slow: not our gesture. Dropped rather than
+      // kept under test, so a scroll that drifts rightward late can never
+      // turn into a navigation.
+      if (Math.abs(dy) > DRIFT || Date.now() - from.at > LIMIT) {
         from = null
         return
       }
-      from = { x: e.touches[0].clientX, y: e.touches[0].clientY, at: Date.now() }
-    }
-
-    const finish = (e) => {
-      const began = from
-      from = null
-      const touch = began && e.changedTouches && e.changedTouches[0]
-      if (!touch) return
-      const dx = touch.clientX - began.x
-      const dy = touch.clientY - began.y
-      // Decisively rightward, decisively horizontal, and not a slow drag.
-      if (dx > 60 && Math.abs(dy) < 60 && dx > Math.abs(dy) * 1.5
-          && Date.now() - began.at < 800) {
+      if (dx > TRIGGER && dx > Math.abs(dy) * 1.5) {
+        from = null
         goBackRef.current?.()
       }
     }
 
+    const end = () => { from = null }
+
     document.addEventListener('touchstart', start, { passive: true })
-    document.addEventListener('touchend', finish, { passive: true })
-    document.addEventListener('touchcancel', finish, { passive: true })
+    document.addEventListener('touchmove', move, { passive: true })
+    document.addEventListener('touchend', end, { passive: true })
+    document.addEventListener('touchcancel', end, { passive: true })
     return () => {
       document.removeEventListener('touchstart', start)
-      document.removeEventListener('touchend', finish)
-      document.removeEventListener('touchcancel', finish)
+      document.removeEventListener('touchmove', move)
+      document.removeEventListener('touchend', end)
+      document.removeEventListener('touchcancel', end)
     }
   }, [])
 

@@ -70,8 +70,6 @@ const STRINGS = {
     settingsHint: 'Reminders, language and preferences.',
     guidelinesTitle: 'Collection Guidelines',
     guidelinesHint: 'What goes where and how to prepare.',
-    termsTitle: 'Terms of Service',
-    termsHint: 'Using KurbConnect.',
     poweredBy: 'Powered by',
     noGuidelines: 'Your provider has not added collection guidelines yet.',
     // Home / Calendar
@@ -183,6 +181,7 @@ const STRINGS = {
     about: 'About',
     version: 'Version',
     privacyPolicy: 'Privacy policy',
+    termsOfService: 'Terms of service',
     stopEverything: 'Stop notifications and remove my data',
     stopConfirm: 'This turns off all notifications and removes this device from our records. Your saved address stays on this phone.',
     stopConfirmAction: 'Stop and remove',
@@ -260,8 +259,6 @@ const STRINGS = {
     settingsHint: 'Recordatorios, idioma y preferencias.',
     guidelinesTitle: 'Guía de recolección',
     guidelinesHint: 'Qué va dónde y cómo prepararlo.',
-    termsTitle: 'Términos de servicio',
-    termsHint: 'Uso de KurbConnect.',
     poweredBy: 'Con tecnología de',
     noGuidelines: 'Su proveedor aún no ha agregado una guía de recolección.',
     // Home / Calendar
@@ -366,6 +363,7 @@ const STRINGS = {
     about: 'Acerca de',
     version: 'Versión',
     privacyPolicy: 'Política de privacidad',
+    termsOfService: 'Términos de servicio',
     stopEverything: 'Detener notificaciones y eliminar mis datos',
     stopConfirm: 'Esto desactiva todas las notificaciones y elimina este dispositivo de nuestros registros. Su dirección guardada permanece en este teléfono.',
     stopConfirmAction: 'Detener y eliminar',

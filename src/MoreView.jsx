@@ -1,17 +1,12 @@
-import { Settings, Bell, Recycle, FileText, AlertCircle, ChevronRight } from 'lucide-react'
+import { Settings, Bell, Recycle, AlertCircle, ChevronRight } from 'lucide-react'
 import { S, C } from './styles'
 import { useLang } from './i18n'
-
-// KurbConnect's own terms, identical for every provider.
-// Confirm this page exists before shipping.
-const TERMS_URL = 'https://honeaenterprises.com/kurbconnect/terms-of-service/'
 
 const TINT = {
   reminders:  '#EFF6FF',
   settings:   '#EEF2FF',
   guidelines: '#ECFDF5',
   report:     '#FEF2F2',
-  terms:      '#EFF6FF',
 }
 
 const ICON_WRAP = {
@@ -69,21 +64,13 @@ export default function MoreView({ onOpen, accent }) {
       title: t.reportIssueTitle,
       hint: t.reportIssueHint,
     },
-    {
-      key: 'terms',
-      Icon: FileText,
-      color: '#2563EB',
-      title: t.termsTitle,
-      hint: t.termsHint,
-      external: TERMS_URL,
-    },
   ]
 
   return (
     <>
       <div style={{ ...S.card, marginTop: 16 }}>
         {items.map((item, i) => {
-          const { key, Icon, color, title, hint, external } = item
+          const { key, Icon, color, title, hint } = item
           const last = i === items.length - 1
           const body = (
             <>
@@ -101,17 +88,7 @@ export default function MoreView({ onOpen, accent }) {
             ...ROW,
             borderBottom: last ? 'none' : `1px solid ${C.ruleSoft}`,
           }
-          return external ? (
-            <a
-              key={key}
-              href={external}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...style, textDecoration: 'none', color: 'inherit' }}
-            >
-              {body}
-            </a>
-          ) : (
+          return (
             <button key={key} onClick={() => onOpen(key)} style={style}>
               {body}
             </button>
